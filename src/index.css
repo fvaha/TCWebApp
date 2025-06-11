@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Background and font smoothing */
+html,
+body {
+  background: #121212;
+  color: #fffde6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  background: #1a1a1a;
+}
+::-webkit-scrollbar-thumb {
+  background: #ffe066;
+  border-radius: 6px;
+}
+
+/* Card shadow */
+.card-shadow {
+  box-shadow: 0 2px 16px 0 rgb(255 224 102 / 7%);
+  border-radius: 16px;
+}
