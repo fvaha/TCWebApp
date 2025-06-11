@@ -32,7 +32,7 @@ export default function Contact() {
       // Remove previous widget if exists
       container.innerHTML = "";
       turnstile.render(container, {
-        sitekey: "0x4AAAAAABgxYdNBr1gcmk5n",
+        sitekey: "",
         theme: isDark ? "dark" : "light",
       });
     }
