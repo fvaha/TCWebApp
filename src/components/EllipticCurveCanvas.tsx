@@ -20,12 +20,12 @@ const FlowingDoc = ({
   speed?: number;
 }) => {
   const ref = useRef<THREE.Group>(null);
-  const start = useRef(Date.now() + delay);
+  const start = useRef(performance.now() - delay); // Updated to start immediately
 
   useFrame(() => {
     if (!ref.current) return;
 
-    const elapsed = Date.now() - start.current;
+    const elapsed = performance.now() - start.current;
     const progress = (elapsed * speed) % 1;
     const distanceRange = 50;
     const distance = progress * distanceRange - distanceRange / 2;
@@ -37,9 +37,10 @@ const FlowingDoc = ({
       text: string;
       color: string;
     };
+
     const distToCenter = pos.length();
 
-    // Smaller, clear transition zones
+    // Symbol transitions based on distance to center
     if (distToCenter > 6) {
       textMesh.text = "📄";
       textMesh.color = isDark ? "#888" : "#444";
@@ -54,7 +55,7 @@ const FlowingDoc = ({
 
   return (
     <group ref={ref}>
-      <Text fontSize={0.15} fillOpacity={0.4} anchorX="center" anchorY="middle">
+      <Text fontSize={0.2} fillOpacity={0.4} anchorX="center" anchorY="middle">
         📄
       </Text>
     </group>
