@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
       {/* Logo */}
       <div className="mb-12 z-10">
         <img
-          src="/logo2.png"
+          src="/logo.png"
           alt="TerraCrypt"
           className="w-48 h-48 mx-auto object-contain"
         />

@@ -55,7 +55,7 @@ const FlowingDoc = ({
 
   return (
     <group ref={ref}>
-      <Text fontSize={0.2} fillOpacity={0.4} anchorX="center" anchorY="middle">
+      <Text fontSize={0.25} fillOpacity={0.4} anchorX="center" anchorY="middle">
         📄
       </Text>
     </group>
