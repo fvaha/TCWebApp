@@ -9,18 +9,12 @@ const socialLinks = [
 ];
 
 const productLinks = [
-  "Database",
-  "Auth",
-  "Functions",
-  "Realtime",
-  "Storage",
-  "Vector",
-  "Cron",
-  "Pricing",
-  "Launch Week",
-  "AI Builders",
-  "Switch from Neon",
+  "Encryption Implementation",
+  "Payment System",
+  "Messenger",
+  "Encrypted Email",
 ];
+
 const resourcesLinks = [
   "Support",
   "System Status",
@@ -32,16 +26,9 @@ const resourcesLinks = [
   "SOC2",
   "HIPAA",
 ];
-const devLinks = [
-  "Documentation",
-  "UI Kit",
-  "Changelog",
-  "Contributing",
-  "Open Source",
-  "SupaSquad",
-  "DevTo",
-  "RSS",
-];
+
+const devLinks = ["Documentation", "UI Kit", "Contributing"];
+
 const companyLinks = [
   "Blog",
   "Customer Stories",
@@ -52,6 +39,7 @@ const companyLinks = [
   "Terms of Service",
   "Privacy Policy",
 ];
+
 const legalLinks = [
   "Privacy Settings",
   "Acceptable Use Policy",
@@ -67,23 +55,16 @@ const Footer: React.FC = () => (
     <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 justify-between">
       {/* Brand & Security Section */}
       <div className="flex-1 min-w-[220px] mb-8 md:mb-0">
-        <img src="/logo.png" alt="TerraCrypt" className="w-12 h-12 mb-4" />
+        <div className="flex items-center gap-3 mb-2">
+          <img src="/logo2.png" alt="TerraCrypt" className="w-12 h-12" />
+          <p className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+            TerraCrypt
+          </p>
+        </div>
         <div className="text-lg font-bold text-gold mb-2">
           We protect your data.
         </div>
-        <div className="mb-2 text-neutral-700 dark:text-neutral-200">
-          <a href="#" className="hover:text-gold font-semibold transition">
-            More on Security
-          </a>
-        </div>
-        <div className="flex gap-2 text-xs mb-4 flex-wrap">
-          <span className="px-2 py-1 rounded bg-gold/10 text-gold font-semibold border border-gold/40">
-            SOC2 Type 2 Certified
-          </span>
-          <span className="px-2 py-1 rounded bg-gold/10 text-gold font-semibold border border-gold/40">
-            HIPAA Compliant
-          </span>
-        </div>
+
         <div className="flex gap-4 mt-4">
           {socialLinks.map((link) => (
             <a
@@ -99,6 +80,7 @@ const Footer: React.FC = () => (
           ))}
         </div>
       </div>
+
       {/* Links Grid */}
       <div className="flex-[3] grid grid-cols-2 sm:grid-cols-4 gap-8">
         <div>
@@ -113,6 +95,7 @@ const Footer: React.FC = () => (
             ))}
           </ul>
         </div>
+
         <div>
           <div className="text-gold font-bold mb-3">Resources</div>
           <ul className="space-y-2">
@@ -125,6 +108,7 @@ const Footer: React.FC = () => (
             ))}
           </ul>
         </div>
+
         <div>
           <div className="text-gold font-bold mb-3">Developers</div>
           <ul className="space-y-2">
@@ -137,6 +121,7 @@ const Footer: React.FC = () => (
             ))}
           </ul>
         </div>
+
         <div>
           <div className="text-gold font-bold mb-3">Company</div>
           <ul className="space-y-2">
@@ -151,6 +136,7 @@ const Footer: React.FC = () => (
         </div>
       </div>
     </div>
+
     {/* Legal & Bottom Row */}
     <div className="max-w-7xl mx-auto mt-12 border-t border-gold/10 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-neutral-500 dark:text-neutral-400 gap-2">
       <div className="flex flex-wrap gap-4 mb-2 md:mb-0">

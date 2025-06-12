@@ -66,13 +66,25 @@ export const FaqItem: FaqItem[] = [
     ],
   },
   {
-    question: "What happens if I lose my device?",
-    answer: ["Your data remains protected through multiple security measures:"],
+    question:
+      "What happens if I lose my device and I have Face ID/App Lock enabled?",
+    answer: [
+      "Your data stays safe. No one can access the app or your messages without your Face ID, fingerprint, or app lock PIN—even if they have your device.",
+    ],
     points: [
-      "Biometric-bound keys that can't be extracted from hardware",
-      "Optional multi-device sync using quantum-resistant protocols",
-      "Recovery codes stored separately from devices",
-      "Remote wipe capability for compromised devices",
+      "App lock prevents unauthorized access to your data",
+      "Face ID or biometric lock is required to open the app",
+      "You can remotely wipe the app if needed",
+    ],
+  },
+
+  {
+    question: "What happens if I lose my password?",
+    answer: ["For your security, passwords cannot be recovered or reset."],
+    points: [
+      "If you lose your password, you will need to create a new account",
+      "All your messages and app data will be permanently deleted",
+      "We recommend saving your password and any recovery codes in a secure place",
     ],
   },
   {

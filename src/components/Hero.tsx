@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { slides } from "../data/slides";
+import EllipticCurveCanvas from "./EllipticCurveCanvas";
 
 const Hero: React.FC = () => {
   const [isDark, setIsDark] = useState(false);
@@ -36,8 +37,11 @@ const Hero: React.FC = () => {
       className="relative flex flex-col items-center justify-start min-h-screen pt-20 pb-12 text-center transition-colors duration-300 overflow-hidden"
       style={bgStyle}
     >
-      {/* Logo with original spacing */}
-      <div className="mb-12">
+      {/* 3D Canvas Background */}
+      <EllipticCurveCanvas isDark={isDark} />
+
+      {/* Logo */}
+      <div className="mb-12 z-10">
         <img
           src="/logo2.png"
           alt="TerraCrypt"
@@ -45,8 +49,8 @@ const Hero: React.FC = () => {
         />
       </div>
 
-      {/* Slides container - properly spaced between logo and indicators */}
-      <div className="relative w-full flex-grow flex flex-col items-center justify-start">
+      {/* Slides */}
+      <div className="relative w-full flex-grow flex flex-col items-center justify-start z-10">
         {slides.map((slide, index) => (
           <div
             key={index}
@@ -72,7 +76,7 @@ const Hero: React.FC = () => {
         ))}
       </div>
 
-      {/* Slide indicators - positioned closer to content but not affecting logo spacing */}
+      {/* Slide Indicators */}
       <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 z-20">
         {slides.map((_, index) => (
           <button
