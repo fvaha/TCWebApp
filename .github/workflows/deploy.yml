@@ -32,7 +32,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 7771
-          timeout: 60
           script: |
             docker pull vahanp/tcwebapp:latest
             docker rm -f tcwebapp || true
