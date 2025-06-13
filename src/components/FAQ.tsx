@@ -1,9 +1,12 @@
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useMemo } from "react";
 import { FaqItem } from "../data/faq";
 
 export default function FAQGrid() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  // Memoize FaqItem for stable reference if needed
+  const faqs = useMemo(() => FaqItem, []);
 
   const toggleAnswer = (index: number) => {
     setActiveIndex(activeIndex === index ? null : index);
@@ -27,7 +30,7 @@ export default function FAQGrid() {
           </h2>
         </motion.div>
 
-        {FaqItem.map((faq, i) => (
+        {faqs.map((faq, i) => (
           <motion.div
             key={faq.question}
             initial={{ y: 30, opacity: 0 }}
@@ -36,8 +39,8 @@ export default function FAQGrid() {
               scale: 1.02,
               boxShadow: "0 8px 32px 0 rgba(212,175,55,0.08)",
             }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.35, delay: i * 0.05 }}
+            viewport={{ once: true, amount: 0.12 }}
+            transition={{ type: "spring", duration: 0.5, delay: i * 0.03 }}
             className="group relative w-full flex flex-col rounded-xl border border-gold/30 bg-white dark:bg-neutral-950 p-5 md:p-6 shadow hover:shadow-lg hover:border-gold transition-all cursor-pointer"
             onClick={() => toggleAnswer(i)}
           >
@@ -49,40 +52,49 @@ export default function FAQGrid() {
                 <h3 className="text-lg md:text-xl font-bold text-gold">
                   {faq.question}
                 </h3>
-
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{
-                    height: activeIndex === i ? "auto" : 0,
-                    opacity: activeIndex === i ? 1 : 0,
-                  }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className="space-y-2 pt-3">
-                    {faq.answer.map((paragraph, pIndex) => (
-                      <p
-                        key={pIndex}
-                        className="text-sm md:text-base text-neutral-700 dark:text-neutral-300"
-                      >
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                  {faq.points && (
-                    <ul className="mt-3 space-y-1.5">
-                      {faq.points.map((point, ptIndex) => (
-                        <li
-                          key={ptIndex}
-                          className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300"
-                        >
-                          <span className="text-gold mt-1">●</span>
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
+                <AnimatePresence initial={false}>
+                  {activeIndex === i && (
+                    <motion.div
+                      key="answer"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        bounce: 0,
+                        duration: 0.35,
+                      }}
+                      className="overflow-hidden"
+                      style={{
+                        pointerEvents: activeIndex === i ? "auto" : "none",
+                      }}
+                    >
+                      <div className="space-y-2 pt-3">
+                        {faq.answer.map((paragraph, pIndex) => (
+                          <p
+                            key={pIndex}
+                            className="text-sm md:text-base text-neutral-700 dark:text-neutral-300"
+                          >
+                            {paragraph}
+                          </p>
+                        ))}
+                      </div>
+                      {faq.points && (
+                        <ul className="mt-3 space-y-1.5">
+                          {faq.points.map((point, ptIndex) => (
+                            <li
+                              key={ptIndex}
+                              className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300"
+                            >
+                              <span className="text-gold mt-1">●</span>
+                              <span>{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </motion.div>
                   )}
-                </motion.div>
+                </AnimatePresence>
               </div>
               <motion.span
                 className="ml-2 text-gold text-xl mt-0.5"
