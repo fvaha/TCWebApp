@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-//import TrustedBy from "./components/TrustedBy";
 import FeaturesGrid from "./components/FeaturesGrid";
-//import Roadmap from "./components/Roadmap";
-//import Pricing from "./components/Pricing";
 import FAQ from "./components/FAQ";
 import ContactForm from "./components/ContactForm";
 import Footer from "./components/Footer";

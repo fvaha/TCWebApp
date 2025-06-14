@@ -1,113 +1,157 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { features } from "../data/features";
+import { useLang } from "../components/LanguageContext";
+import type { Feature } from "../types/feature";
 
-// Custom hook for window width (avoids laggy checks in render)
+/* ---------- language data ---------- */
+import { features as featuresEn } from "../data/features.en";
+import { features as featuresDe } from "../data/features.de";
+import { features as featuresFr } from "../data/features.fr";
+import { features as featuresAr } from "../data/features.ar";
+import { features as featuresCr } from "../data/features.cr";
+import { features as featuresNo } from "../data/features.no";
+import { features as featuresRu } from "../data/features.ru";
+import { features as featuresSp } from "../data/features.sp";
+
+const featuresMap: Record<string, Feature[]> = {
+  en: featuresEn,
+  de: featuresDe,
+  fr: featuresFr,
+  ar: featuresAr,
+  cr: featuresCr,
+  no: featuresNo,
+  ru: featuresRu,
+  sp: featuresSp,
+};
+
+function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted;
+}
+
 function useWindowWidth() {
-  const [width, setWidth] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 1200
-  );
+  const [w, setW] = useState<number>(1024);
   useEffect(() => {
-    const handleResize = () => setWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const update = () => setW(window.innerWidth);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
-  return width;
+  return w;
 }
 
 export default function FeaturesGrid() {
-  const [showAll, setShowAll] = useState(false);
-  const [expandedCard, setExpandedCard] = useState<number | null>(null);
+  const { t, lang } = useLang();
+  const mounted = useMounted();
   const width = useWindowWidth();
-  const isMobile = width < 640;
+  const isMobile = mounted ? width < 640 : false;
 
-  const initialFeatures = useMemo(() => features.slice(0, 3), []);
-  const remainingFeatures = useMemo(() => features.slice(3), []);
+  const features = useMemo(() => featuresMap[lang] || featuresEn, [lang]);
+  const [showAll, setShowAll] = useState(false);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
-  const visibleFeatures = showAll ? features : initialFeatures;
+  const firstThree = features.slice(0, 3);
+  const rest = features.slice(3);
+  const visible = showAll ? features : firstThree;
 
   return (
-    <div className="w-full bg-white dark:bg-black transition-colors duration-300">
+    <div className="full-bleed w-full bg-white dark:bg-black transition-colors">
       <section
         id="features"
-        className="w-full max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
+        className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6
+                   px-6 py-16 sm:grid-cols-2 md:py-24 xl:grid-cols-3"
       >
-        {visibleFeatures.map((feature, i) => (
-          <motion.div
-            key={feature.title}
-            className="relative flex flex-col rounded-xl border border-gold/30 bg-white dark:bg-neutral-950 p-6 shadow hover:shadow-lg hover:border-gold transition-all cursor-pointer"
-            initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            whileHover={{ scale: 1.03 }}
-            viewport={{ once: true, amount: 0.15 }}
-            transition={{ type: "spring", duration: 0.6, delay: i * 0.07 }}
-            onClick={() =>
-              isMobile && setExpandedCard(expandedCard === i ? null : i)
-            }
-          >
-            <div className="flex items-center gap-3">
-              <feature.icon className="text-gold w-6 h-6" />
-              <h2 className={`text-xl font-bold text-gold`}>{feature.title}</h2>
-            </div>
-            <p className="mt-2 text-neutral-700 dark:text-neutral-200 font-light">
-              {feature.description}
-            </p>
+        {visible.map((feature, i) => {
+          const collapsed = isMobile && expanded !== i;
 
-            {/* Desktop: Always visible; Mobile: Visible only on tap */}
-            <AnimatePresence initial={false}>
-              {(isMobile ? expandedCard === i : true) && (
-                <motion.ul
-                  key="points"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-4 space-y-2 overflow-hidden"
-                >
-                  {feature.points.map((pt) => (
-                    <li
-                      key={pt}
-                      className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300"
-                    >
-                      <span className="text-gold">●</span>
-                      <span>{pt}</span>
-                    </li>
-                  ))}
-                </motion.ul>
-              )}
-            </AnimatePresence>
-
-            {feature.image && (
-              <div className="absolute bottom-4 right-4 w-20 opacity-50 pointer-events-none select-none">
-                <img
-                  src={feature.image}
-                  alt={feature.title}
-                  className="block dark:hidden"
-                  draggable={false}
-                />
-                <img
-                  src={feature.imageDark}
-                  alt={feature.title}
-                  className="hidden dark:block"
-                  draggable={false}
-                />
+          return (
+            <div
+              key={feature.title}
+              className="relative flex flex-col rounded-xl border border-gold bg-white p-6 shadow transition dark:bg-neutral-950"
+              onClick={() => isMobile && setExpanded(expanded === i ? null : i)}
+              style={{
+                cursor: isMobile ? "pointer" : "default",
+                transition: "box-shadow 0.3s, transform 0.15s",
+                // Small lift & shadow on desktop hover
+                ...(isMobile
+                  ? {}
+                  : {
+                      // Use group:hover if you want with Tailwind for hover styles!
+                    }),
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <feature.icon className="h-6 w-6 text-gold" />
+                <h2 className="text-xl font-bold text-gold">{feature.title}</h2>
               </div>
-            )}
-          </motion.div>
-        ))}
 
-        {!showAll && remainingFeatures.length > 0 && (
-          <button
-            onClick={() => setShowAll(true)}
-            className="col-span-full mx-auto mt-8 bg-gold text-white px-6 py-2 rounded-md hover:bg-gold-dark transition"
-          >
-            Load More Features
-          </button>
+              <p className="mt-2 font-light text-neutral-700 dark:text-neutral-200">
+                {feature.description}
+              </p>
+
+              <ul
+                className={`mt-4 space-y-2 overflow-hidden transition-[max-height,opacity] duration-300
+                            ${
+                              collapsed
+                                ? "max-h-0 opacity-0"
+                                : "max-h-96 opacity-100"
+                            }`}
+              >
+                {feature.points.map((pt) => (
+                  <li
+                    key={pt}
+                    className="flex items-start gap-2 text-neutral-600 dark:text-neutral-300"
+                  >
+                    <span className="mt-1 text-gold">●</span>
+                    <span>{pt}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {feature.image || feature.imageDark ? (
+                <div className="pointer-events-none absolute bottom-4 right-4 w-20 opacity-50">
+                  {feature.image && (
+                    <img
+                      src={feature.image}
+                      alt={feature.title}
+                      width={80}
+                      height={80}
+                      className="block dark:hidden"
+                      draggable={false}
+                    />
+                  )}
+                  {feature.imageDark && (
+                    <img
+                      src={feature.imageDark}
+                      alt={feature.title}
+                      width={80}
+                      height={80}
+                      className="hidden dark:block"
+                      draggable={false}
+                    />
+                  )}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+
+        {!showAll && rest.length > 0 && (
+          <div className="col-span-full flex justify-center mt-8">
+            <button
+              onClick={() => setShowAll(true)}
+              className="bg-gold hover:bg-yellow-500 text-black font-bold py-3 px-8 rounded-lg transition duration-300"
+            >
+              {t.features.loadMore}
+            </button>
+          </div>
         )}
 
-        <p className="text-xl sm:text-2xl text-neutral-500 dark:text-neutral-400 col-span-full tracking-tight mt-8 text-center">
-          <span className="text-gold font-semibold">Use one or all.</span> Each
-          feature works standalone or as a platform.
+        <p className="col-span-full mt-8 text-center text-xl tracking-tight text-neutral-500 dark:text-neutral-400 sm:text-2xl">
+          <span className="font-semibold text-gold">
+            {t.features.useOneOrAll}
+          </span>{" "}
+          {t.features.subtitle}
         </p>
       </section>
     </div>

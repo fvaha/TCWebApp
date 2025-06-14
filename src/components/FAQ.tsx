@@ -1,126 +1,124 @@
-import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
-import { FaqItem } from "../data/faq";
+import { useLang } from "../components/LanguageContext";
+import type { FaqItem } from "../types/faq";
+
+/* ---------- language data ---------- */
+import { faqItems as faqEn } from "../data/faq.en";
+import { faqItems as faqDe } from "../data/faq.de";
+import { faqItems as faqFr } from "../data/faq.fr";
+import { faqItems as faqAr } from "../data/faq.ar";
+import { faqItems as faqCr } from "../data/faq.cr";
+import { faqItems as faqNo } from "../data/faq.no";
+import { faqItems as faqRu } from "../data/faq.ru";
+import { faqItems as faqSp } from "../data/faq.sp";
+
+const faqMap: Record<string, FaqItem[]> = {
+  en: faqEn,
+  de: faqDe,
+  fr: faqFr,
+  ar: faqAr,
+  cr: faqCr,
+  no: faqNo,
+  ru: faqRu,
+  sp: faqSp,
+};
 
 export default function FAQGrid() {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const { t, lang } = useLang();
+  const [active, setActive] = useState<number | null>(null);
+  const faqs = useMemo(() => faqMap[lang] || faqEn, [lang]);
 
-  // Memoize FaqItem for stable reference if needed
-  const faqs = useMemo(() => FaqItem, []);
-
-  const toggleAnswer = (index: number) => {
-    setActiveIndex(activeIndex === index ? null : index);
-  };
+  const toggle = (idx: number) => setActive(active === idx ? null : idx);
 
   return (
-    <div className="w-full bg-white dark:bg-black transition-colors duration-300">
+    <div className="full-bleed w-full bg-white dark:bg-black transition-colors">
       <section
         id="faq"
-        className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 py-12 md:py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5"
+        className="mx-auto grid w-full max-w-[1800px] grid-cols-1 gap-4 px-4 py-12
+                   sm:px-6 md:grid-cols-2 md:gap-5 md:py-20 lg:grid-cols-3"
       >
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="md:col-span-2 lg:col-span-3"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-gold text-center mb-8 md:mb-12">
-            Frequently Asked Questions
-          </h2>
-        </motion.div>
+        <h2 className="md:col-span-2 lg:col-span-3 mb-8 text-center text-3xl font-bold text-gold md:mb-12 md:text-4xl">
+          {t.faq.heading}
+        </h2>
 
-        {faqs.map((faq, i) => (
-          <motion.div
-            key={faq.question}
-            initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            whileHover={{
-              scale: 1.02,
-              boxShadow: "0 8px 32px 0 rgba(212,175,55,0.08)",
-            }}
-            viewport={{ once: true, amount: 0.12 }}
-            transition={{ type: "spring", duration: 0.5, delay: i * 0.03 }}
-            className="group relative w-full flex flex-col rounded-xl border border-gold/30 bg-white dark:bg-neutral-950 p-5 md:p-6 shadow hover:shadow-lg hover:border-gold transition-all cursor-pointer"
-            onClick={() => toggleAnswer(i)}
-          >
-            <div className="flex items-start gap-3">
-              <span className="text-gold font-bold text-lg md:text-xl">
-                Q{i + 1}.
-              </span>
-              <div className="flex-1">
-                <h3 className="text-lg md:text-xl font-bold text-gold">
-                  {faq.question}
-                </h3>
-                <AnimatePresence initial={false}>
-                  {activeIndex === i && (
-                    <motion.div
-                      key="answer"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{
-                        type: "spring",
-                        bounce: 0,
-                        duration: 0.35,
-                      }}
-                      className="overflow-hidden"
-                      style={{
-                        pointerEvents: activeIndex === i ? "auto" : "none",
-                      }}
-                    >
-                      <div className="space-y-2 pt-3">
-                        {faq.answer.map((paragraph, pIndex) => (
-                          <p
-                            key={pIndex}
-                            className="text-sm md:text-base text-neutral-700 dark:text-neutral-300"
+        {faqs.map((faq, i) => {
+          const open = active === i;
+
+          return (
+            <div
+              key={faq.question}
+              onClick={() => toggle(i)}
+              className={`flex flex-col cursor-pointer rounded-xl border border-gold bg-white p-5 shadow transition dark:bg-neutral-950
+                hover:-translate-y-1 hover:shadow-xl`}
+              style={{
+                boxShadow: open
+                  ? "0 10px 32px rgba(212,175,55,0.12)"
+                  : undefined,
+                transform: open ? "translateY(-4px)" : undefined,
+                transition: "box-shadow 0.3s, transform 0.15s",
+              }}
+            >
+              {/* question row */}
+              <div className="flex items-start gap-3">
+                <span className="text-lg font-bold text-gold md:text-xl">
+                  Q{i + 1}.
+                </span>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gold md:text-xl">
+                    {faq.question}
+                  </h3>
+
+                  {/* answer (always rendered; collapses via CSS) */}
+                  <div
+                    className={`pt-3 overflow-hidden transition-[max-height,opacity] duration-300
+                                ${
+                                  open
+                                    ? "max-h-[800px] opacity-100"
+                                    : "max-h-0 opacity-0"
+                                }`}
+                  >
+                    {faq.answer.map((p, idx) => (
+                      <p
+                        key={idx}
+                        className="text-sm text-neutral-700 dark:text-neutral-300 md:text-base"
+                      >
+                        {p}
+                      </p>
+                    ))}
+
+                    {faq.points && (
+                      <ul className="mt-3 space-y-1.5">
+                        {faq.points.map((pt, ptIdx) => (
+                          <li
+                            key={ptIdx}
+                            className="flex items-start gap-2 text-sm text-neutral-700
+                                       dark:text-neutral-300 md:text-base"
                           >
-                            {paragraph}
-                          </p>
+                            <span className="mt-1 text-gold">●</span>
+                            <span>{pt}</span>
+                          </li>
                         ))}
-                      </div>
-                      {faq.points && (
-                        <ul className="mt-3 space-y-1.5">
-                          {faq.points.map((point, ptIndex) => (
-                            <li
-                              key={ptIndex}
-                              className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300"
-                            >
-                              <span className="text-gold mt-1">●</span>
-                              <span>{point}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      </ul>
+                    )}
+                  </div>
+                </div>
+                {/* arrow */}
+                <span
+                  className={`ml-2 mt-0.5 text-xl text-gold transition-transform duration-300 ${
+                    open ? "rotate-180" : ""
+                  }`}
+                >
+                  ▼
+                </span>
               </div>
-              <motion.span
-                className="ml-2 text-gold text-xl mt-0.5"
-                animate={{ rotate: activeIndex === i ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                ▼
-              </motion.span>
             </div>
-          </motion.div>
-        ))}
+          );
+        })}
 
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="md:col-span-2 lg:col-span-3 mt-6 md:mt-8"
-        >
-          <p className="text-base md:text-lg text-neutral-500 dark:text-neutral-400 tracking-tight text-center">
-            <span className="text-gold font-semibold">
-              Need more information?
-            </span>{" "}
-            Contact our security team for detailed technical specifications.
-          </p>
-        </motion.div>
+        <p className="md:col-span-2 lg:col-span-3 mt-8 text-center text-base tracking-tight text-neutral-500 dark:text-neutral-400 md:text-lg">
+          <span className="font-semibold text-gold">{t.faq.moreInfo}</span>{" "}
+          {t.faq.contactCTA}
+        </p>
       </section>
     </div>
   );

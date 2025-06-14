@@ -1,0 +1,100 @@
+const cr = {
+  nav: {
+    features: "Značajke",
+    faq: "FAQ",
+    contact: "Kontakt",
+    language: "Jezik",
+  },
+  footer: {
+    brand: "TerraCrypt",
+    slogan: "Štitimo vaše podatke.",
+    product: "Proizvod",
+    resources: "Resursi",
+    developers: "Razvojni programeri",
+    company: "Tvrtka",
+    legal: "Pravno",
+    rights: "Sva prava pridržana.",
+    productLinks: [
+      "Implementacija enkripcije",
+      "Sustav plaćanja",
+      "Messenger",
+      "Kriptirani e-mail",
+    ],
+    resourcesLinks: [
+      "Podrška",
+      "Status sustava",
+      "Postanite partner",
+      "Integracije",
+      "Brendirani resursi / Logotipi",
+      "Sigurnost i usklađenost",
+      "DPA",
+      "SOC2",
+      "HIPAA",
+    ],
+    devLinks: ["Dokumentacija", "UI Kit", "Doprinos"],
+    companyLinks: [
+      "Blog",
+      "Priče korisnika",
+      "Karijere",
+      "Tvrtka",
+      "Događaji i webinari",
+      "Opća dostupnost",
+      "Uvjeti korištenja",
+      "Politika privatnosti",
+    ],
+    legalLinks: [
+      "Postavke privatnosti",
+      "Pravila prihvatljive upotrebe",
+      "Pravila podrške",
+      "SLA",
+      "Humans.txt",
+      "Lawyers.txt",
+      "Security.txt",
+    ],
+  },
+  hero: {
+    logoAlt: "TerraCrypt",
+    slideAria: "Idi na slajd",
+  },
+  contact: {
+    heading: "Kontaktirajte nas",
+    namePlaceholder: "Vaše ime",
+    emailPlaceholder: "Vaš e-mail",
+    messagePlaceholder: "Vaša poruka",
+    send: "Pošalji poruku",
+    success: "Obrazac poslan",
+    topics: [
+      {
+        bold: "Tehnička podrška:",
+        text: "Problemi s korištenjem TerraCrypta, aplikacijom ili instalacijom.",
+      },
+      {
+        bold: "Sigurnosna pitanja:",
+        text: "Prijava ranjivosti, pitanja o sigurnosti ili privatnosti.",
+      },
+      {
+        bold: "Poslovni upiti:",
+        text: "Kupnja većih količina, enterprise licence ili prilagođena rješenja.",
+      },
+      {
+        bold: "Prijedlozi za značajke:",
+        text: "Predložite poboljšanja ili nove alate za našu platformu.",
+      },
+      {
+        bold: "Opća pitanja:",
+        text: "Povratne informacije, suradnja ili medijski upiti.",
+      },
+    ],
+  },
+  features: {
+    loadMore: "Učitaj više značajki",
+    useOneOrAll: "Koristite jednu ili sve.",
+    subtitle: "Svaka značajka radi samostalno ili kao platforma.",
+  },
+  faq: {
+    heading: "Često postavljana pitanja",
+    moreInfo: "Trebate više informacija?",
+    contactCTA: "Kontaktirajte naš sigurnosni tim za tehničke specifikacije.",
+  },
+};
+export default cr;

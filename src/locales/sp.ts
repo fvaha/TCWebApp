@@ -1,0 +1,88 @@
+const sp = {
+  nav: {
+    features: "Funciones",
+    faq: "FAQ",
+    contact: "Contacto",
+    language: "Idioma",
+  },
+  footer: {
+    brand: "TerraCrypt",
+    slogan: "Protegemos tus datos.",
+    product: "Producto",
+    resources: "Recursos",
+    developers: "Desarrolladores",
+    company: "Compañía",
+    legal: "Legal",
+    rights: "Todos los derechos reservados.",
+    productLinks: [
+      "Implementación de cifrado",
+      "Sistema de pagos",
+      "Mensajero",
+      "Correo electrónico cifrado",
+    ],
+    resourcesLinks: [
+      "Soporte",
+      "Estado del sistema",
+      "Hazte socio",
+      "Integraciones",
+      "Activos de marca / Logotipos",
+      "Seguridad y cumplimiento",
+      "DPA",
+      "SOC2",
+      "HIPAA",
+    ],
+    devLinks: ["Documentación", "UI Kit", "Contribuir"],
+    companyLinks: [
+      "Blog",
+      "Historias de clientes",
+      "Carreras",
+      "Compañía",
+      "Eventos y Webinars",
+      "Disponibilidad general",
+      "Términos de servicio",
+      "Política de privacidad",
+    ],
+    legalLinks: [
+      "Configuración de privacidad",
+      "Política de uso aceptable",
+      "Política de soporte",
+      "SLA",
+      "Humans.txt",
+      "Lawyers.txt",
+      "Security.txt",
+    ],
+  },
+  hero: {
+    logoAlt: "TerraCrypt",
+    slideAria: "Ir a la diapositiva",
+  },
+  contact: {
+    heading: "Contáctanos",
+    namePlaceholder: "Tu nombre",
+    emailPlaceholder: "Tu email",
+    messagePlaceholder: "Tu mensaje",
+    send: "Enviar mensaje",
+    success: "Formulario enviado",
+    infoHeading: "¿Sobre qué puedes contactarnos?",
+    topics: [
+      "Soporte técnico: Problemas con TerraCrypt, fallos de la aplicación o ayuda para la instalación.",
+      "Preguntas de seguridad: Reportes de vulnerabilidades, prácticas de seguridad o información de privacidad.",
+      "Consultas comerciales: Compras al por mayor, licencias empresariales o soluciones personalizadas.",
+      "Sugerencias y mejoras: Propuestas para mejorar o añadir nuevas herramientas a nuestra plataforma.",
+      "Consultas generales: Feedback, colaboración o solicitudes de prensa.",
+    ],
+  },
+  features: {
+    loadMore: "Cargar más funciones",
+    useOneOrAll: "Usa una o todas.",
+    subtitle:
+      "Cada función funciona de forma independiente o como una plataforma.",
+  },
+  faq: {
+    heading: "Preguntas Frecuentes",
+    moreInfo: "¿Necesitas más información?",
+    contactCTA:
+      "Contacta a nuestro equipo de seguridad para especificaciones técnicas.",
+  },
+};
+export default sp;
