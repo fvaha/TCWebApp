@@ -1,76 +1,109 @@
+/* ---------------------------------------------------------------------------
+   ContactForm.tsx – turnkey replacement
+   --------------------------------------------------------------------------- */
+
 import React, { useEffect, useState, useRef } from "react";
 import { useForm, ValidationError } from "@formspree/react";
 import { useLang } from "../components/LanguageContext";
 
+/** ------------------------------------------------------------------------ */
+/** 1. Local types                                                          **/
+/** ------------------------------------------------------------------------ */
 type ContactTopic = string | { bold: string; text: string };
 
+/** ------------------------------------------------------------------------ */
+/** 2. Component                                                            **/
+/** ------------------------------------------------------------------------ */
 export default function ContactForm() {
   const { t } = useLang();
 
-  /* ------------------------------------------------------------------ */
-  /*  1. Dark-mode sync                                                 */
-  /* ------------------------------------------------------------------ */
+  /** Light/dark sync ------------------------------------------------------ */
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
     const html = document.documentElement;
-    const sync = () => setIsDark(html.classList.contains("dark"));
-    sync();
-    const obs = new MutationObserver(sync);
+    const syncTheme = () => setIsDark(html.classList.contains("dark"));
+    syncTheme();
+    const obs = new MutationObserver(syncTheme);
     obs.observe(html, { attributes: true, attributeFilter: ["class"] });
     return () => obs.disconnect();
   }, []);
 
-  /* ------------------------------------------------------------------ */
-  /*  2. Cloudflare Turnstile                                           */
-  /* ------------------------------------------------------------------ */
-  const widgetId = useRef<string | null>(null); // if you ever need to reset
-  const [token, setToken] = useState<string | null>(null);
+  /** Cloudflare Turnstile ------------------------------------------------- */
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [widgetReady, setWidgetReady] = useState(false); // new
+  const widgetTimer = useRef<number | undefined>(undefined); // explicit
 
-  useEffect(() => {
-    // @ts-expect-error: provided by Turnstile script
-    const ts = window.turnstile as typeof import("turnstile");
+  const renderTurnstile = () => {
+    // @ts-expect-error – Turnstile is injected by the CDN script in index.html
+    const turnstile = window.turnstile;
     const container = document.getElementById("turnstile-widget");
+    if (!container || !turnstile) return;
 
-    if (container && ts) {
-      container.innerHTML = ""; // remount on theme switch
-      widgetId.current = ts.render(container, {
-        sitekey: "0x4AAAAAABgxYdNBr1gcmk5n",
-        theme: isDark ? "dark" : "light",
-        callback: (tok: string) => setToken(tok), // got a fresh token
-        "expired-callback": () => setToken(null),
-        "error-callback": () => setToken(null),
-      });
-    }
-  }, [isDark]);
+    container.innerHTML = ""; // reset (also clears any residual iframe)
+    setTurnstileToken(null);
+    setWidgetReady(false);
 
-  /* ------------------------------------------------------------------ */
-  /*  3. Formspree                                                      */
-  /* ------------------------------------------------------------------ */
-  const [state, formspreeSubmit] = useForm("xanjjnya");
+    turnstile.render(container, {
+      sitekey: "0x4AAAAAABgxYdNBr1gcmk5n",
+      theme: isDark ? "dark" : "light",
+      callback: (token: string) => {
+        setTurnstileToken(token);
+        setWidgetReady(true);
+      },
+      "expired-callback": () => {
+        setTurnstileToken(null);
+        setWidgetReady(false);
+      },
+      "error-callback": () => {
+        setTurnstileToken(null);
+        setWidgetReady(false);
+      },
+    });
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    if (!token) {
-      e.preventDefault();
-      alert("Please complete the security check.");
-      return;
-    }
-    formspreeSubmit(e);
+    // Re-render every 15 min so the token never goes stale
+    clearTimeout(widgetTimer.current);
+    widgetTimer.current = window.setTimeout(renderTurnstile, 15 * 60 * 1000);
   };
 
-  /* ------------------------------------------------------------------ */
-  /*  4. Simple success screen                                          */
-  /* ------------------------------------------------------------------ */
-  const bgStyle = isDark
+  useEffect(() => {
+    renderTurnstile(); // first render
+    return () => clearTimeout(widgetTimer.current); // cleanup on unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDark]); // re-render on theme switch
+
+  /** Formspree ------------------------------------------------------------ */
+  const [state, handleSubmit] = useForm("xanjjnya");
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    // Token guard
+    if (!turnstileToken) {
+      e.preventDefault();
+      alert("⚠️ Please complete the security check first.");
+      return;
+    }
+    handleSubmit(e);
+  }
+
+  /** Background helper ---------------------------------------------------- */
+  const sectionStyle = isDark
     ? {
         backgroundImage: "url('/contact-bg.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }
-    : { backgroundColor: "#fff" as const };
+    : { backgroundColor: "#fff" };
 
+  /** ---------------------------------------------------------------------- */
+  /** 3. Success view                                                       **/
+  /** ---------------------------------------------------------------------- */
   if (state.succeeded) {
     return (
-      <section id="contact" className="py-24 px-6 md:px-16" style={bgStyle}>
+      <section
+        id="contact"
+        className="relative py-24 px-6 md:px-16 transition-colors"
+        style={sectionStyle}
+      >
         <div className="max-w-2xl mx-auto text-center text-2xl font-bold text-gold">
           {t.contact.success}
         </div>
@@ -78,13 +111,17 @@ export default function ContactForm() {
     );
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  5. Form markup                                                    */
-  /* ------------------------------------------------------------------ */
+  /** ---------------------------------------------------------------------- */
+  /** 4. Form view                                                          **/
+  /** ---------------------------------------------------------------------- */
   return (
-    <section id="contact" className="py-24 px-6 md:px-16" style={bgStyle}>
+    <section
+      id="contact"
+      className="relative py-24 px-6 md:px-16 transition-colors"
+      style={sectionStyle}
+    >
       {isDark && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-md pointer-events-none" />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
       )}
 
       <div className="relative max-w-6xl mx-auto z-10 animate-fadeInUp">
@@ -93,16 +130,15 @@ export default function ContactForm() {
         </h2>
 
         <div className="flex flex-col md:flex-row gap-10">
-          {/* ----------------------------- FORM ----------------------------- */}
+          {/* ------------------------ FORM ----------------------------------- */}
           <form
             onSubmit={onSubmit}
             autoComplete="off"
-            className="flex-1 bg-white/90 dark:bg-neutral-950/80
-                       rounded-xl shadow p-8 space-y-6 border border-gold/20
-                       backdrop-blur"
+            className="flex-1 bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow
+                          p-8 space-y-6 border border-gold/20 backdrop-blur"
           >
+            {/* Name & Email -------------------------------------------------- */}
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Name */}
               <div>
                 <input
                   id="name"
@@ -123,7 +159,6 @@ export default function ContactForm() {
                 />
               </div>
 
-              {/* Email */}
               <div>
                 <input
                   id="email"
@@ -145,7 +180,7 @@ export default function ContactForm() {
               </div>
             </div>
 
-            {/* Message */}
+            {/* Message ------------------------------------------------------- */}
             <div>
               <textarea
                 id="message"
@@ -166,34 +201,35 @@ export default function ContactForm() {
               />
             </div>
 
-            {/* Turnstile widget */}
-            <div className="flex justify-center">
+            {/* Turnstile widget + hidden field ------------------------------ */}
+            <div className="flex justify-center items-center">
               <div id="turnstile-widget" />
             </div>
-
-            {/* Hidden field – send token to Formspree */}
             <input
               type="hidden"
               name="cf-turnstile-response"
-              value={token ?? ""}
+              value={turnstileToken ?? ""}
             />
 
-            {/* Submit */}
+            {/* Submit -------------------------------------------------------- */}
             <div className="text-center">
               <button
                 type="submit"
-                disabled={!token || state.submitting}
-                className="bg-gold hover:bg-yellow-500 text-black font-bold
-                           py-3 px-8 rounded-lg transition duration-300
-                           disabled:opacity-40 disabled:cursor-not-allowed"
+                disabled={state.submitting || !widgetReady}
+                className={`bg-gold text-black font-bold py-3 px-8 rounded-lg
+                               transition duration-300 ${
+                                 state.submitting || !widgetReady
+                                   ? "opacity-50 cursor-not-allowed"
+                                   : "hover:bg-yellow-500"
+                               }`}
               >
-                {t.contact.send}
+                {state.submitting ? "…" : t.contact.send}
               </button>
             </div>
           </form>
 
-          {/* --------------------------- INFO BOX --------------------------- */}
-          <aside className="flex-1 flex flex-col justify-center">
+          {/* ------------------------ INFO ---------------------------------- */}
+          <div className="flex-1 flex flex-col justify-center">
             <div
               className="bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow
                             p-8 border border-gold/20 backdrop-blur space-y-5"
@@ -214,7 +250,7 @@ export default function ContactForm() {
                 )}
               </ul>
             </div>
-          </aside>
+          </div>
         </div>
       </div>
     </section>
