@@ -9,7 +9,7 @@
 [![formspree](https://img.shields.io/badge/Forms-Formspree-E46643)]()
 [![i18n](https://img.shields.io/badge/i18n-8%20languages-green)]()
 [![docker](https://img.shields.io/docker/image-size/vahanp/tcwebapp/latest?label=Docker%20image)]()
-[![Build & Deploy](https://github.com/vahanp/TCWebApp/actions/workflows/deploy.yml/badge.svg)](https://github.com/vahanp/TCWebApp/actions/workflows/deploy.yml)
+[![Build & Deploy](https://github.com/fvaha/TCWebApp/actions/workflows/deploy.yml/badge.svg)](https://github.com/fvaha/TCWebApp/actions/workflows/deploy.yml)
 
 **TerraCrypt** is a multilingual Vite + React front-end for our zero-trust encryption platform – featuring hardware-secured crypto, a 3-D hero scene, a Turnstile-protected Formspree contact form and a full Tailwind design system in **TerraCrypt gold**.
 
