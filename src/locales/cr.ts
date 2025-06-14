@@ -63,7 +63,7 @@ const cr = {
     messagePlaceholder: "Vaša poruka",
     send: "Pošalji poruku",
     success: "Obrazac poslan",
-    infoHeading: "Za što nas možete kontaktirati?",
+    infoHeading: "O čemu nas možete kontaktirati?",
     topics: [
       "Tehnička podrška: Problemi s korištenjem TerraCrypta, aplikacijom ili instalacijom.",
       "Sigurnosna pitanja: Prijava ranjivosti, pitanja o sigurnosti ili privatnosti.",
@@ -72,6 +72,7 @@ const cr = {
       "Opća pitanja: Povratne informacije, suradnja ili medijski upiti.",
     ],
   },
+
   features: {
     loadMore: "Učitaj više značajki",
     useOneOrAll: "Koristite jednu ili sve.",

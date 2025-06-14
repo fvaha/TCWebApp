@@ -65,26 +65,11 @@ const fr = {
     success: "Formulaire envoyé",
     infoHeading: "Pourquoi nous contacter ?",
     topics: [
-      {
-        bold: "Support technique :",
-        text: "Problèmes d’utilisation de TerraCrypt, problèmes d’application ou aide à l’installation.",
-      },
-      {
-        bold: "Questions de sécurité :",
-        text: "Rapports de vulnérabilité, pratiques de sécurité ou informations sur la confidentialité.",
-      },
-      {
-        bold: "Demandes commerciales :",
-        text: "Achat en volume, licences entreprises ou solutions sur mesure.",
-      },
-      {
-        bold: "Suggestions :",
-        text: "Proposer des améliorations ou de nouveaux outils pour notre plateforme.",
-      },
-      {
-        bold: "Questions générales :",
-        text: "Retours, collaborations ou demandes médias.",
-      },
+      "Support technique : Problèmes d’utilisation de TerraCrypt, de l’application ou d’installation.",
+      "Questions de sécurité : Rapports de vulnérabilité, pratiques de sécurité ou informations sur la confidentialité.",
+      "Demandes commerciales : Achat en volume, licences entreprise ou solutions sur mesure.",
+      "Suggestions de fonctionnalités : Proposer des améliorations ou de nouveaux outils pour notre plateforme.",
+      "Questions générales : Retours, collaborations ou demandes médias.",
     ],
   },
   features: {
