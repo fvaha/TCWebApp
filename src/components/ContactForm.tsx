@@ -1,31 +1,14 @@
-/* ------------------------------------------------------------------------
-   src/pages/Contact.tsx
-   ------------------------------------------------------------------------ */
-
-import React, { useEffect, useRef, useState } from "react";
+/* src/pages/Contact.tsx */
+import React, { useEffect, useState } from "react";
 import { useForm, ValidationError } from "@formspree/react";
 import { useLang } from "../components/LanguageContext";
 
-/* ────────────────────────────────────────────────────────────────────── */
-/* 1. Helpers                                                             */
-/* ────────────────────────────────────────────────────────────────────── */
-
-// Use Cloudflare’s public **test** key when running vite locally, otherwise
-// use your real widget key.
-const TURNSTILE_SITEKEY = import.meta.env.DEV
-  ? "1x00000000000000000000AA" // ⬅ localhost / dev
-  : "0x4AAAAAABgxYdNBr1gcmk5n"; // ⬅ your production key
-
 type ContactTopic = string | { bold: string; text: string };
-
-/* ────────────────────────────────────────────────────────────────────── */
-/* 2. Component                                                           */
-/* ────────────────────────────────────────────────────────────────────── */
 
 export default function Contact() {
   const { t } = useLang();
 
-  /* -------- theme sync (for dark-mode widget) ------------------------ */
+  /* ---------------------------------------------------------------- theme */
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
     const html = document.documentElement;
@@ -36,96 +19,88 @@ export default function Contact() {
     return () => obs.disconnect();
   }, []);
 
-  /* -------- Cloudflare Turnstile ------------------------------------ */
-  const widgetRef = useRef<HTMLDivElement | null>(null); // <div id="turnstile">
-  const widgetId = useRef<string | null>(null); // id returned by render()
-  const [token, setToken] = useState<string | null>(null);
+  /* --------------------------------------------------------- Turnstile 🛡 */
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error – injected by CDN script in index.html
-    const turnstile = window.turnstile as typeof window.turnstile | undefined;
-
-    if (!turnstile || !widgetRef.current) return;
-
-    // Remove previous widget (dark/light toggle or Vite Fast-Refresh)
-    if (widgetId.current) turnstile.remove(widgetId.current);
-
-    widgetId.current = turnstile.render(widgetRef.current, {
-      sitekey: TURNSTILE_SITEKEY,
-      theme: isDark ? "dark" : "light",
-      callback: (tok: string) => setToken(tok),
-      "expired-callback": () => setToken(null),
-      "error-callback": () => setToken(null),
-    });
-
-    // Clean up when component unmounts
-    return () => {
-      if (widgetId.current) turnstile.remove(widgetId.current);
-    };
+    // @ts-expect-error injected by the Turnstile snippet in index.html
+    const turnstile = window.turnstile;
+    const el = document.getElementById("turnstile-widget");
+    if (el && turnstile) {
+      el.innerHTML = "";
+      turnstile.render(el, {
+        sitekey: "0x4AAAAAABgxYdNBr1gcmk5n",
+        theme: isDark ? "dark" : "light",
+        callback: (token: string) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(null),
+        "error-callback": () => setTurnstileToken(null),
+      });
+    }
   }, [isDark]);
 
-  /* -------- Formspree ------------------------------------------------ */
-  const [state, formspreeSubmit] = useForm("xanjjnya"); // your Formspree ID
+  /* --------------------------------------------------------------- Formspree */
+  const [state, handleSubmit] = useForm("xanjjnya");
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    if (!token) {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    if (!turnstileToken) {
+      // Defensive check – shouldn’t be reachable because button is disabled.
       e.preventDefault();
-      alert("Please complete the security check.");
       return;
     }
-    formspreeSubmit(e); // let Formspree handle the POST
-  };
+    handleSubmit(e);
+  }
 
-  /* -------- style helper --------------------------------------------- */
+  /* ---------------------------------------------------------------- CSS helpers */
   const sectionStyle = isDark
     ? {
         backgroundImage: "url('/contact-bg.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }
     : { backgroundColor: "#fff" };
 
-  /* -------- success screen ------------------------------------------- */
   if (state.succeeded) {
     return (
       <section
         id="contact"
-        className="py-24 px-6 md:px-16"
+        className="relative py-24 px-6 md:px-16"
         style={sectionStyle}
       >
-        <p className="max-w-2xl mx-auto text-center text-2xl font-bold text-gold">
+        <div className="max-w-2xl mx-auto text-center text-2xl font-bold text-gold">
           {t.contact.success}
-        </p>
+        </div>
       </section>
     );
   }
 
-  /* ------------------------------------------------------------------ */
-  /* 3. Mark-up                                                         */
-  /* ------------------------------------------------------------------ */
+  /* ---------------------------------------------------------------- JSX */
   return (
-    <section id="contact" className="py-24 px-6 md:px-16" style={sectionStyle}>
-      {/* dark overlay for background image */}
+    <section
+      id="contact"
+      className="relative py-24 px-6 md:px-16"
+      style={sectionStyle}
+    >
       {isDark && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
       )}
 
-      <div className="relative max-w-6xl mx-auto z-10 animate-fadeInUp">
-        <h2 className="text-4xl font-bold text-gold text-center mb-12">
+      <div className="relative z-10 mx-auto max-w-6xl animate-fadeInUp">
+        <h2 className="mb-12 text-center text-4xl font-bold text-gold">
           {t.contact.heading}
         </h2>
 
-        <div className="flex flex-col md:flex-row gap-10">
-          {/* ────────────────  FORM  ──────────────── */}
+        <div className="flex flex-col gap-10 md:flex-row">
+          {/* ---------------- Form ---------------- */}
           <form
             onSubmit={onSubmit}
             autoComplete="off"
-            className="flex-1 bg-white/90 dark:bg-neutral-950/80 rounded-xl
-                          shadow p-8 space-y-6 border border-gold/20 backdrop-blur"
+            className="flex-1 space-y-6 rounded-xl border border-gold/20
+                       bg-white/90 p-8 shadow backdrop-blur
+                       dark:bg-neutral-950/80"
           >
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Name */}
+            {/* --- name + email */}
+            <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <input
                   id="name"
@@ -133,7 +108,7 @@ export default function Contact() {
                   type="text"
                   required
                   placeholder={t.contact.namePlaceholder}
-                  className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
+                  className={`w-full rounded-lg border border-gold/20 p-4 focus:border-gold ${
                     isDark
                       ? "bg-neutral-900 text-white placeholder:text-neutral-400"
                       : "bg-white text-black placeholder:text-neutral-500"
@@ -146,7 +121,6 @@ export default function Contact() {
                 />
               </div>
 
-              {/* Email */}
               <div>
                 <input
                   id="email"
@@ -154,7 +128,7 @@ export default function Contact() {
                   type="email"
                   required
                   placeholder={t.contact.emailPlaceholder}
-                  className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
+                  className={`w-full rounded-lg border border-gold/20 p-4 focus:border-gold ${
                     isDark
                       ? "bg-neutral-900 text-white placeholder:text-neutral-400"
                       : "bg-white text-black placeholder:text-neutral-500"
@@ -168,15 +142,15 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Message */}
+            {/* --- message */}
             <div>
               <textarea
                 id="message"
                 name="message"
-                required
                 rows={6}
+                required
                 placeholder={t.contact.messagePlaceholder}
-                className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
+                className={`w-full rounded-lg border border-gold/20 p-4 focus:border-gold ${
                   isDark
                     ? "bg-neutral-900 text-white placeholder:text-neutral-400"
                     : "bg-white text-black placeholder:text-neutral-500"
@@ -189,48 +163,49 @@ export default function Contact() {
               />
             </div>
 
-            {/* Turnstile widget mounts here */}
+            {/* Turnstile */}
             <div className="flex justify-center">
-              <div id="turnstile-widget" ref={widgetRef} />
+              <div id="turnstile-widget" />
             </div>
 
-            {/* hidden field sent to Formspree */}
+            {/* hidden token field */}
             <input
               type="hidden"
               name="cf-turnstile-response"
-              value={token ?? ""}
+              value={turnstileToken ?? ""}
             />
 
-            {/* Submit */}
+            {/* submit */}
             <div className="text-center">
               <button
                 type="submit"
-                disabled={state.submitting}
-                className="bg-gold hover:bg-yellow-500 text-black font-bold
-                              py-3 px-8 rounded-lg transition duration-300"
+                disabled={!turnstileToken || state.submitting}
+                className={`bg-gold py-3 px-8 font-bold rounded-lg transition
+                             ${
+                               !turnstileToken || state.submitting
+                                 ? "cursor-not-allowed opacity-50"
+                                 : "hover:bg-yellow-500"
+                             }`}
               >
-                {t.contact.send}
+                {state.submitting ? "…" : t.contact.send}
               </button>
             </div>
           </form>
 
-          {/* ────────────────  INFO COLUMN  ──────────────── */}
-          <aside className="flex-1 flex flex-col justify-center">
-            <div
-              className="bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow
-                               p-8 border border-gold/20 backdrop-blur space-y-5"
-            >
-              <h3 className="text-2xl font-bold text-gold mb-3">
+          {/* ---------------- Info column ---------------- */}
+          <aside className="flex flex-1 flex-col justify-center">
+            <div className="space-y-5 rounded-xl border border-gold/20 bg-white/90 p-8 shadow backdrop-blur dark:bg-neutral-950/80">
+              <h3 className="mb-3 text-2xl font-bold text-gold">
                 {t.contact.infoHeading}
               </h3>
 
-              <ul className="list-disc ml-6 text-neutral-700 dark:text-neutral-300 space-y-2">
-                {(t.contact.topics as ContactTopic[]).map((topic, i) =>
-                  typeof topic === "string" ? (
-                    <li key={i}>{topic}</li>
+              <ul className="ml-6 list-disc space-y-2 text-neutral-700 dark:text-neutral-300">
+                {(t.contact.topics as ContactTopic[]).map((tpc, i) =>
+                  typeof tpc === "string" ? (
+                    <li key={i}>{tpc}</li>
                   ) : (
                     <li key={i}>
-                      <b>{topic.bold}</b> {topic.text}
+                      <b>{tpc.bold}</b> {tpc.text}
                     </li>
                   )
                 )}
