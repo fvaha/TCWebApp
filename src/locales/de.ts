@@ -63,27 +63,13 @@ const de = {
     messagePlaceholder: "Ihre Nachricht",
     send: "Nachricht senden",
     success: "Formular abgeschickt",
+    infoHeading: "Worüber können Sie uns kontaktieren?",
     topics: [
-      {
-        bold: "Technischer Support:",
-        text: "Probleme mit TerraCrypt, der App oder bei der Installation.",
-      },
-      {
-        bold: "Sicherheitsfragen:",
-        text: "Schwachstellen melden, Fragen zu Sicherheit oder Datenschutz.",
-      },
-      {
-        bold: "Geschäftsanfragen:",
-        text: "Großbestellungen, Enterprise-Lizenzen oder individuelle Lösungen.",
-      },
-      {
-        bold: "Feature-Anfragen:",
-        text: "Verbesserungsvorschläge oder neue Tools für unsere Plattform.",
-      },
-      {
-        bold: "Allgemeine Fragen:",
-        text: "Feedback, Zusammenarbeit oder Medienanfragen.",
-      },
+      "Technischer Support: Probleme mit TerraCrypt, der App oder bei der Installation.",
+      "Sicherheitsfragen: Schwachstellen melden, Fragen zu Sicherheit oder Datenschutz.",
+      "Geschäftsanfragen: Großbestellungen, Enterprise-Lizenzen oder individuelle Lösungen.",
+      "Feature-Anfragen: Verbesserungsvorschläge oder neue Tools für unsere Plattform.",
+      "Allgemeine Fragen: Feedback, Zusammenarbeit oder Medienanfragen.",
     ],
   },
   features: {

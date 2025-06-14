@@ -63,27 +63,13 @@ const cr = {
     messagePlaceholder: "Vaša poruka",
     send: "Pošalji poruku",
     success: "Obrazac poslan",
+    infoHeading: "Za što nas možete kontaktirati?",
     topics: [
-      {
-        bold: "Tehnička podrška:",
-        text: "Problemi s korištenjem TerraCrypta, aplikacijom ili instalacijom.",
-      },
-      {
-        bold: "Sigurnosna pitanja:",
-        text: "Prijava ranjivosti, pitanja o sigurnosti ili privatnosti.",
-      },
-      {
-        bold: "Poslovni upiti:",
-        text: "Kupnja većih količina, enterprise licence ili prilagođena rješenja.",
-      },
-      {
-        bold: "Prijedlozi za značajke:",
-        text: "Predložite poboljšanja ili nove alate za našu platformu.",
-      },
-      {
-        bold: "Opća pitanja:",
-        text: "Povratne informacije, suradnja ili medijski upiti.",
-      },
+      "Tehnička podrška: Problemi s korištenjem TerraCrypta, aplikacijom ili instalacijom.",
+      "Sigurnosna pitanja: Prijava ranjivosti, pitanja o sigurnosti ili privatnosti.",
+      "Poslovni upiti: Kupnja većih količina, enterprise licence ili prilagođena rješenja.",
+      "Prijedlozi za značajke: Predložite poboljšanja ili nove alate za našu platformu.",
+      "Opća pitanja: Povratne informacije, suradnja ili medijski upiti.",
     ],
   },
   features: {
