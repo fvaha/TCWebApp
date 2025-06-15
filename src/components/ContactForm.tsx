@@ -18,8 +18,8 @@ export default function ContactForm() {
   }, []);
 
   // Turnstile logic
-  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
-  console.log("Turnstile site key at runtime:", siteKey); 
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAABgxYdNBr1gcmk5n";
+    console.log("Turnstile site key at runtime:", siteKey); 
   // For manual testing in browser console:
   // @ts-expect-error
   window.turnstileSiteKey = siteKey;

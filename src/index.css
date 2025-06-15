@@ -2,28 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Background and font smoothing */
-html,
 body {
-  background: #121212;
-  color: #fffde6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  background: #1a1a1a;
-}
-::-webkit-scrollbar-thumb {
-  background: #ffe066;
-  border-radius: 6px;
+/* TerraCrypt Button Style */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    background-color: #d4af37;
+    color: black;
+  }
+  .btn:hover {
+    background-color: #b38b2c;
+  }
 }
 
-/* Card shadow */
-.card-shadow {
-  box-shadow: 0 2px 16px 0 rgb(255 224 102 / 7%);
-  border-radius: 16px;
+/* Add this at the end for fadeInUp animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
