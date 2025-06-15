@@ -38,6 +38,7 @@ jobs:
           port: 7771
           source: .env
           target: /home/${{ secrets.SERVER_USER }}/tcwebapp/.env
+          overwrite: true
 
       - name: Deploy to Ubuntu Server via SSH
         uses: appleboy/ssh-action@v1.0.0
