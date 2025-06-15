@@ -101,6 +101,20 @@ export default function ContactForm() {
       }
     : { backgroundColor: "#fff" };
 
+  // 🔴 Site key error check: Show nice message instead of blank/black
+  if (!siteKey) {
+    return (
+      <section className="flex flex-col justify-center items-center h-screen bg-black text-white">
+        <h2 className="text-2xl font-bold mb-4">Configuration error:</h2>
+        <p>
+          <b>Turnstile site key is missing.</b>
+          <br />
+          Please check your <code>.env</code> file and Docker build process!
+        </p>
+      </section>
+    );
+  }
+
   if (succeeded) {
     return (
       <section

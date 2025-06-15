@@ -6,22 +6,21 @@ import axios from "axios";
 
 const app = new Hono();
 
-// CORS (only needed if not using Vite proxy — keep for local dev)
+// CORS (dev: allow all, prod: lock down!)
 app.use("*", async (c, next) => {
-  c.header("Access-Control-Allow-Origin", "*");
+  c.header("Access-Control-Allow-Origin", "*"); // change to your site in prod!
   c.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
   c.header("Access-Control-Allow-Headers", "Content-Type");
   if (c.req.method === "OPTIONS") return c.text("ok");
   await next();
 });
 
-// /api/contact handler
 app.post("/api/contact", async (c) => {
   try {
     const body = await c.req.json();
     const { name, email, message, "cf-turnstile-response": token } = body;
 
-    // Check env
+    // Validate env secret
     const secret = process.env.TURNSTILE_SECRET_KEY;
     if (!secret) {
       return c.json({ ok: false, error: "Missing Turnstile secret." }, 500);
@@ -35,6 +34,7 @@ app.post("/api/contact", async (c) => {
     );
 
     if (!verify.data.success) {
+      console.error("Turnstile validation failed:", verify.data);
       return c.json({ ok: false, error: "Turnstile validation failed." }, 403);
     }
 
@@ -47,7 +47,7 @@ app.post("/api/contact", async (c) => {
 
     return c.json({ ok: true, result: result.data });
   } catch (err: any) {
-    console.error("Contact endpoint error:", err);
+    console.error("Contact endpoint error:", err?.response?.data || err.message || err);
     return c.json({ ok: false, error: "Server error" }, 500);
   }
 });

@@ -2,11 +2,14 @@
 FROM node:20.13.1-alpine AS builder
 WORKDIR /app
 
+# Copy .env file FIRST so Vite sees env variables at build time
+COPY .env .env
+
 # Copy only necessary files for installing deps and building
 COPY package*.json ./
 COPY tsconfig*.json ./
 COPY vite.config.ts ./
-COPY ./index.html ./index.html           
+COPY ./index.html ./index.html
 COPY public ./public
 COPY src ./src
 COPY backend ./backend
