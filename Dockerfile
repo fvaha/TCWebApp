@@ -1,22 +1,22 @@
-# ------------ Stage 1: Build React frontend & backend TypeScript ------------
+# ------------ Stage 1: Build React frontend & TypeScript backend ------------
   FROM node:20.13.1-alpine AS builder
   WORKDIR /app
   
-  # Copy .env for Vite build-time variables
+  # Copy env for Vite build-time variables
   COPY .env .env
   
-  # Copy package configs early for better install caching
+  # Copy project config files early for better cache
   COPY package*.json ./
   COPY tsconfig*.json ./
   COPY vite.config.ts ./
-  COPY index.html ./index.html 
+  COPY index.html ./
   
-  # Copy frontend + backend source
+  # Copy all sources
   COPY public ./public
   COPY src ./src
   COPY backend ./backend
   
-  # Install all dependencies (frontend + backend)
+  # Install all dependencies
   RUN npm install --force
   
   # Build backend and frontend
@@ -26,26 +26,26 @@
   FROM alpine:latest AS final
   WORKDIR /app
   
-  # Install required runtime tools
+  # Install NGINX + Node.js to serve frontend and run backend
   RUN apk add --no-cache nginx nodejs npm
   
-  # Copy built frontend to nginx web root
+  # Copy compiled frontend output to NGINX web root
   COPY --from=builder /app/dist /var/www/html
   
-  # Copy nginx config
+  # Copy NGINX config
   COPY nginx.conf /etc/nginx/nginx.conf
   
-  # Copy backend compiled JS and package info
+  # Copy only compiled backend JS and package info
   COPY --from=builder /app/package*.json ./
   COPY --from=builder /app/dist/backend ./backend
   
-  # Install only production dependencies for backend
+  # Install only production deps for backend
   RUN npm install --omit=dev && npm cache clean --force
   
-  # Expose ports: 8181 = frontend, 5174 = backend API
+  # Expose frontend (8181) and backend API (5174)
   EXPOSE 8181
   EXPOSE 5174
   
-  # Start backend server and NGINX together
+  # Run backend server and NGINX together
   CMD ["sh", "-c", "node backend/server.js & nginx -g 'daemon off;'"]
   
