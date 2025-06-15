@@ -8,12 +8,14 @@
   },
   "scripts": {
     "dev": "vite",
-    "dev:api": "tsx backend/server.ts",
+    "dev:api": "tsx watch backend/server.ts",
     "dev:all": "concurrently -k -n FRONTEND,BACKEND -c magenta,cyan \"npm run dev\" \"npm run dev:api\"",
+    "clean": "rimraf dist",
     "build:backend": "tsc -p tsconfig.node.json",
-    "build": "npm run build:backend && vite build",
+    "build": "npm run clean && npm run build:backend && vite build",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "start": "node dist/backend/server.js"
   },
   "dependencies": {
     "@hono/node-server": "1.14.4",
@@ -43,8 +45,9 @@
     "eslint-plugin-react-refresh": "0.4.19",
     "globals": "16.0.0",
     "postcss": "8.5.5",
+    "rimraf": "^6.0.1",
     "tailwindcss": "3.4.1",
-    "tsx": "4.7.0",
+    "tsx": "^4.20.3",
     "typescript": "5.8.3",
     "vite": "6.3.5"
   }
