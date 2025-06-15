@@ -1,37 +1,38 @@
-# Stage 1: Build React frontend and backend TypeScript
+# Stage 1: Build React frontend + TypeScript
 FROM node:20.13.1-alpine AS builder
-
 WORKDIR /app
+
+# Copy source code
 COPY . .
 
-# Install dependencies and build both frontend + backend
+# Install all dependencies and build
 RUN npm install --force
 RUN npm run build
 
-# Stage 2: Final image with nginx + node runtime
+# Stage 2: Final image with backend and NGINX for frontend
 FROM alpine:latest AS final
-
-# Install runtime dependencies: nginx and node
-RUN apk add --no-cache nginx nodejs npm
-
-# Set up working dir
 WORKDIR /app
 
-# Copy frontend build to nginx web root
+# Install only what’s necessary
+RUN apk add --no-cache nginx nodejs npm
+
+# Copy only built frontend files to NGINX
 COPY --from=builder /app/dist /var/www/html
 
-# Copy nginx configuration
+# Copy NGINX config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy backend files for runtime
-COPY --from=builder /app /app
+# Copy only needed backend files
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/src/server.ts ./src/server.ts
 
-# Install only production dependencies
-RUN npm install --omit=dev
+# Install production dependencies only
+RUN npm install --omit=dev && npm cache clean --force
 
-# Expose frontend (nginx) and backend (Hono API) ports
+# Expose ports
 EXPOSE 8181
 EXPOSE 5174
 
-# Start both backend and frontend (nginx)
+# Start both backend and frontend servers
 CMD ["sh", "-c", "node dist/server.js & nginx -g 'daemon off;'"]
