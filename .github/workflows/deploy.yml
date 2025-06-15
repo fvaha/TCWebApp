@@ -4,16 +4,30 @@ on:
   push:
     branches: [main]
 
+env:
+  IMAGE_NAME: vahanp/tcwebapp
+  LATEST_TAG: latest
+  COMMIT_SHA_TAG: ${{ github.sha }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4  # Updated to v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Write .env file from secret
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          # Validate .env has content
+          if [ ! -s .env ]; then
+            echo "Error: .env file is empty"
+            exit 1
+          fi
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -26,7 +40,18 @@ jobs:
         with:
           context: .
           push: true
-          tags: vahanp/tcwebapp:latest
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
+            ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_ENV=production
+
+      - name: Verify Docker image
+        run: |
+          docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
+          docker inspect ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
 
       - name: Deploy on remote server via SSH
         uses: appleboy/ssh-action@v1.0.0
@@ -36,19 +61,32 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 7771
           script: |
+            set -e  # Exit immediately on error
+            echo "=== Starting deployment ==="
+            
+            # Create directory if not exists
             mkdir -p /home/${{ secrets.SERVER_USER }}/tcwebapp
-
+            
+            # Verify .env exists
             if [ ! -f /home/${{ secrets.SERVER_USER }}/tcwebapp/.env ]; then
-              echo ".env file missing on server"
+              echo "Error: .env file missing on server"
               exit 1
             fi
-
-            docker pull vahanp/tcwebapp:latest
+            
+            # Pull new image
+            docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
+            
+            # Stop and remove old container
             docker rm -f tcwebapp || true
+            
+            # Run new container
             docker run -d \
               --name tcwebapp \
               -p 8181:8181 \
               -p 5174:5174 \
               --env-file /home/${{ secrets.SERVER_USER }}/tcwebapp/.env \
-              --restart always \
-              vahanp/tcwebapp:latest
+              --restart unless-stopped \
+              ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
+            
+            echo "=== Deployment successful ==="
+            docker ps -a | grep tcwebapp
