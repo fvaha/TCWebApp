@@ -5,7 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "rootDir": "./backend",
-    "outDir": "./dist/backend",
+    "outDir": "./dist",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
