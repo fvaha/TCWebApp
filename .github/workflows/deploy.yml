@@ -2,17 +2,17 @@ name: Build, Push and Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Write .env file from GitHub Secret
+      - name: Write .env file from secret
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Login to Docker Hub
@@ -28,7 +28,7 @@ jobs:
           push: true
           tags: vahanp/tcwebapp:latest
 
-      - name: Deploy to Ubuntu Server via SSH
+      - name: Deploy on remote server via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -39,7 +39,7 @@ jobs:
             mkdir -p /home/${{ secrets.SERVER_USER }}/tcwebapp
 
             if [ ! -f /home/${{ secrets.SERVER_USER }}/tcwebapp/.env ]; then
-              echo ".env file missing on server!"
+              echo ".env file missing on server"
               exit 1
             fi
 
