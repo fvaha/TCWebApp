@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/backend",
+    "outDir": "./dist-backend",
     "rootDir": "./backend",
     "target": "ES2022",
     "module": "ESNext",

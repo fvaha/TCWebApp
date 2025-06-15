@@ -2,26 +2,15 @@
 FROM node:20.13.1-alpine AS builder
 WORKDIR /app
 
-# Copy files needed for installation
-COPY package*.json ./
-COPY tsconfig*.json ./
-COPY vite.config.ts ./
+# Copy all files
+COPY . .
 
-# Install dependencies
-RUN npm install --force
+# Install and build
+RUN npm install --force && npm run build
 
-# Copy remaining files
-COPY .env ./
-COPY index.html ./
-COPY public ./public
-COPY src ./src
-COPY backend ./backend
-
-# Build application
-RUN npm run build
-
-# Verify build output
-RUN echo "=== Build Output ===" && ls -lR /app/dist
+# Verify outputs
+RUN echo "=== Backend Output ===" && ls -lR /app/dist-backend
+RUN echo "=== Frontend Output ===" && ls -lR /app/dist
 
 # Stage 2: Final image
 FROM node:20.13-alpine AS final
@@ -33,17 +22,19 @@ RUN apk add --no-cache nginx
 # Create directories
 RUN mkdir -p /var/www/html && mkdir -p ./backend
 
-# Copy frontend assets
+# Copy frontend
 COPY --from=builder /app/dist /var/www/html
 
-# Copy compiled backend
-COPY --from=builder /app/dist/backend ./backend
+# Copy backend
+COPY --from=builder /app/dist-backend/server.js ./backend/
 
-# Copy backend dependencies
-COPY --from=builder /app/backend/package.json ./backend/package.json
+# Copy backend dependencies if they exist
+COPY --from=builder /app/backend/package.json ./backend/ 2>/dev/null || echo "No package.json found"
 
-# Install production dependencies for backend
-RUN cd backend && npm install --production
+# Install production dependencies if package.json exists
+RUN if [ -f "./backend/package.json" ]; then \
+      cd backend && npm install --production; \
+    fi
 
 # Copy nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
