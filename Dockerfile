@@ -2,11 +2,13 @@
 FROM node:20.13.1-alpine AS builder
 WORKDIR /app
 
-# Copy env file just for frontend build (DO NOT include in final image)
-COPY .env .env
-
-# Copy source code
-COPY . .
+# Copy only necessary files to install deps and build
+COPY package*.json ./
+COPY tsconfig*.json ./
+COPY vite.config.ts ./
+COPY public ./public
+COPY src ./src
+COPY backend ./backend
 
 # Install all dependencies and build
 RUN npm install --force
@@ -16,16 +18,16 @@ RUN npm run build
 FROM alpine:latest AS final
 WORKDIR /app
 
-# Install only what’s necessary
+# Install only necessary system tools
 RUN apk add --no-cache nginx nodejs npm
 
-# Copy only built frontend files to NGINX
+# Copy built frontend to NGINX path
 COPY --from=builder /app/dist /var/www/html
 
 # Copy NGINX config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy only backend essentials
+# Copy backend build output and package files
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/backend/server.ts ./backend/server.ts
@@ -33,9 +35,9 @@ COPY --from=builder /app/backend/server.ts ./backend/server.ts
 # Install only production dependencies
 RUN npm install --omit=dev && npm cache clean --force
 
-# Expose frontend (served by nginx) and backend API (Hono)
+# Expose NGINX and backend ports
 EXPOSE 8181
 EXPOSE 5174
 
-# Start both servers
+# Start both backend and frontend servers
 CMD ["sh", "-c", "node dist/server.js & nginx -g 'daemon off;'"]
