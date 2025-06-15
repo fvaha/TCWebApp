@@ -34,4 +34,4 @@ EXPOSE 8181
 EXPOSE 5174
 
 # Start both backend and frontend (nginx)
-CMD sh -c "node dist/server.js & nginx -g 'daemon off;'"
+CMD ["sh", "-c", "node dist/server.js & nginx -g 'daemon off;'"]
