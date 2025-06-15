@@ -1,23 +1,12 @@
-/* ---------------------------------------------------------------------------
-   ContactForm.tsx – turnkey replacement
-   --------------------------------------------------------------------------- */
-
 import React, { useEffect, useState, useRef } from "react";
-import { useForm, ValidationError } from "@formspree/react";
 import { useLang } from "../components/LanguageContext";
 
-/** ------------------------------------------------------------------------ */
-/** 1. Local types                                                          **/
-/** ------------------------------------------------------------------------ */
 type ContactTopic = string | { bold: string; text: string };
 
-/** ------------------------------------------------------------------------ */
-/** 2. Component                                                            **/
-/** ------------------------------------------------------------------------ */
 export default function ContactForm() {
   const { t } = useLang();
 
-  /** Light/dark sync ------------------------------------------------------ */
+  // Theme sync for Turnstile
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
     const html = document.documentElement;
@@ -28,23 +17,22 @@ export default function ContactForm() {
     return () => obs.disconnect();
   }, []);
 
-  /** Cloudflare Turnstile ------------------------------------------------- */
+  // Turnstile logic
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [widgetReady, setWidgetReady] = useState(false); // new
-  const widgetTimer = useRef<number | undefined>(undefined); // explicit
+  const [widgetReady, setWidgetReady] = useState(false);
+  const widgetTimer = useRef<number | null>(null);
 
   const renderTurnstile = () => {
-    // @ts-expect-error – Turnstile is injected by the CDN script in index.html
+    // @ts-expect-error - global injected by Turnstile script
     const turnstile = window.turnstile;
     const container = document.getElementById("turnstile-widget");
     if (!container || !turnstile) return;
-
-    container.innerHTML = ""; // reset (also clears any residual iframe)
+    container.innerHTML = "";
     setTurnstileToken(null);
     setWidgetReady(false);
-
     turnstile.render(container, {
-      sitekey: "0x4AAAAAABgxYdNBr1gcmk5n",
+      sitekey: siteKey,
       theme: isDark ? "dark" : "light",
       callback: (token: string) => {
         setTurnstileToken(token);
@@ -59,32 +47,57 @@ export default function ContactForm() {
         setWidgetReady(false);
       },
     });
-
-    // Re-render every 15 min so the token never goes stale
-    clearTimeout(widgetTimer.current);
+    if (widgetTimer.current) {
+      clearTimeout(widgetTimer.current);
+    }
     widgetTimer.current = window.setTimeout(renderTurnstile, 15 * 60 * 1000);
   };
 
   useEffect(() => {
-    renderTurnstile(); // first render
-    return () => clearTimeout(widgetTimer.current); // cleanup on unmount
+    renderTurnstile();
+    return () => {
+      if (widgetTimer.current) {
+        clearTimeout(widgetTimer.current);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDark]); // re-render on theme switch
+  }, [isDark]);
 
-  /** Formspree ------------------------------------------------------------ */
-  const [state, handleSubmit] = useForm("xanjjnya");
+  // Form state
+  const [submitting, setSubmitting] = useState(false);
+  const [succeeded, setSucceeded] = useState(false);
+  const [errors, setErrors] = useState<string | null>(null);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    // Token guard
+  // Form submission
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setErrors(null);
     if (!turnstileToken) {
-      e.preventDefault();
       alert("⚠️ Please complete the security check first.");
       return;
     }
-    handleSubmit(e);
+    setSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    const data: Record<string, string> = {};
+    for (const [key, value] of formData.entries()) data[key] = String(value);
+    data["cf-turnstile-response"] = turnstileToken;
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (json.ok) setSucceeded(true);
+      else setErrors(json.error || "Unknown error.");
+    } catch {
+      setErrors("Network/server error. Please try again later.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  /** Background helper ---------------------------------------------------- */
   const sectionStyle = isDark
     ? {
         backgroundImage: "url('/contact-bg.jpg')",
@@ -94,10 +107,8 @@ export default function ContactForm() {
       }
     : { backgroundColor: "#fff" };
 
-  /** ---------------------------------------------------------------------- */
-  /** 3. Success view                                                       **/
-  /** ---------------------------------------------------------------------- */
-  if (state.succeeded) {
+  // --- Success view ---
+  if (succeeded) {
     return (
       <section
         id="contact"
@@ -111,9 +122,7 @@ export default function ContactForm() {
     );
   }
 
-  /** ---------------------------------------------------------------------- */
-  /** 4. Form view                                                          **/
-  /** ---------------------------------------------------------------------- */
+  // --- Form view ---
   return (
     <section
       id="contact"
@@ -123,21 +132,17 @@ export default function ContactForm() {
       {isDark && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
       )}
-
       <div className="relative max-w-6xl mx-auto z-10 animate-fadeInUp">
         <h2 className="text-4xl font-bold text-gold text-center mb-12">
           {t.contact.heading}
         </h2>
-
         <div className="flex flex-col md:flex-row gap-10">
-          {/* ------------------------ FORM ----------------------------------- */}
+          {/* --- FORM --- */}
           <form
             onSubmit={onSubmit}
             autoComplete="off"
-            className="flex-1 bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow
-                          p-8 space-y-6 border border-gold/20 backdrop-blur"
+            className="flex-1 bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow p-8 space-y-6 border border-gold/20 backdrop-blur"
           >
-            {/* Name & Email -------------------------------------------------- */}
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <input
@@ -152,13 +157,7 @@ export default function ContactForm() {
                       : "bg-white text-black placeholder:text-neutral-500"
                   }`}
                 />
-                <ValidationError
-                  prefix="Name"
-                  field="name"
-                  errors={state.errors}
-                />
               </div>
-
               <div>
                 <input
                   id="email"
@@ -172,15 +171,8 @@ export default function ContactForm() {
                       : "bg-white text-black placeholder:text-neutral-500"
                   }`}
                 />
-                <ValidationError
-                  prefix="Email"
-                  field="email"
-                  errors={state.errors}
-                />
               </div>
             </div>
-
-            {/* Message ------------------------------------------------------- */}
             <div>
               <textarea
                 id="message"
@@ -194,14 +186,7 @@ export default function ContactForm() {
                     : "bg-white text-black placeholder:text-neutral-500"
                 }`}
               />
-              <ValidationError
-                prefix="Message"
-                field="message"
-                errors={state.errors}
-              />
             </div>
-
-            {/* Turnstile widget + hidden field ------------------------------ */}
             <div className="flex justify-center items-center">
               <div id="turnstile-widget" />
             </div>
@@ -210,34 +195,31 @@ export default function ContactForm() {
               name="cf-turnstile-response"
               value={turnstileToken ?? ""}
             />
-
-            {/* Submit -------------------------------------------------------- */}
+            {errors && (
+              <div className="text-red-600 text-center font-medium">
+                {errors}
+              </div>
+            )}
             <div className="text-center">
               <button
                 type="submit"
-                disabled={state.submitting || !widgetReady}
-                className={`bg-gold text-black font-bold py-3 px-8 rounded-lg
-                               transition duration-300 ${
-                                 state.submitting || !widgetReady
-                                   ? "opacity-50 cursor-not-allowed"
-                                   : "hover:bg-yellow-500"
-                               }`}
+                disabled={submitting || !widgetReady}
+                className={`bg-gold text-black font-bold py-3 px-8 rounded-lg transition duration-300 ${
+                  submitting || !widgetReady
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-yellow-500"
+                }`}
               >
-                {state.submitting ? "…" : t.contact.send}
+                {submitting ? "…" : t.contact.send}
               </button>
             </div>
           </form>
-
-          {/* ------------------------ INFO ---------------------------------- */}
+          {/* --- INFO --- */}
           <div className="flex-1 flex flex-col justify-center">
-            <div
-              className="bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow
-                            p-8 border border-gold/20 backdrop-blur space-y-5"
-            >
+            <div className="bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow p-8 border border-gold/20 backdrop-blur space-y-5">
               <h3 className="text-2xl font-bold text-gold mb-3">
                 {t.contact.infoHeading}
               </h3>
-
               <ul className="list-disc ml-6 text-neutral-700 dark:text-neutral-300 space-y-2">
                 {(t.contact.topics as ContactTopic[]).map((topic, i) =>
                   typeof topic === "string" ? (

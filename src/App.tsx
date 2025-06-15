@@ -4,6 +4,7 @@ import Hero from "./components/Hero";
 import FeaturesGrid from "./components/FeaturesGrid";
 import FAQ from "./components/FAQ";
 import ContactForm from "./components/ContactForm";
+import AppsSection from "./components/Appssection";
 import Footer from "./components/Footer";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
       <FeaturesGrid />
       <FAQ />
       <ContactForm />
+      <AppsSection />
       <Footer />
     </div>
   );

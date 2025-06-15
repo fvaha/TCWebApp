@@ -2,144 +2,57 @@ import type { FaqItem } from "../types/faq";
 
 export const faqItems: FaqItem[] = [
   {
-    question:
-      "How is this encryption different from standard solutions like WhatsApp or Signal?",
+    question: "What is TerraCrypt and what does it do?",
     answer: [
-      "Our technology goes beyond conventional encryption with several key advantages:",
-    ],
-    points: [
-      "Hardware-secured keys (Secure Enclave/StrongBox) that never leave your device",
-      "Perfect Forward Secrecy with automatic key regeneration",
-      "Quantum-resistant algorithms (ECDSA + secp256k1) unlike standard solutions",
-      "Zero-Trust architecture where even we cannot access your data",
-      "Military-grade side-channel protection with randomized delays",
+      "TerraCrypt protects your digital life. It locks your messages, payments, and files so only you—and the people you allow—can access them.",
     ],
   },
   {
-    question:
-      "Why should I trust this over US-government approved encryption (P-256)?",
+    question: "How does TerraCrypt keep my information private?",
     answer: [
-      "Our encryption provides superior privacy protection compared to standard government-approved solutions:",
-    ],
-    points: [
-      "No NSA backdoors - we use secp256k1 (proven in blockchain) instead of suspect secp256r1 (P-256)",
-      "Mathematically transparent - not developed under NSA supervision",
-      "Complies with NATO/NIS 2 standards while exceeding their requirements",
-      "Quantum-resilient foundation ready for post-quantum algorithms",
+      "Everything you do—messages, payments, and documents—is scrambled with strong security. Only the right person (with your permission) can unlock it.",
     ],
   },
   {
-    question: "How does this protect against quantum computing attacks?",
-    answer: ["Our multi-layered quantum defense system includes:"],
-    points: [
-      "Asymmetric encryption with secp256k1 - currently quantum-resistant",
-      "Architecture designed to integrate post-quantum algorithms when needed",
-      "Input obfuscation that defeats pattern analysis",
-      "Perfect Forward Secrecy ensures past communications remain secure",
-    ],
-  },
-  {
-    question: "Can governments or law enforcement access my data?",
-    answer: ["No. The system is designed to be truly zero-trust:"],
-    points: [
-      "No master keys exist that could be compelled via court order",
-      "Private keys never leave your device's hardware security module",
-      "Even we cannot decrypt your data - only communicating parties have access",
-      "Server stores only encrypted blobs without metadata patterns",
-    ],
-  },
-  {
-    question:
-      "How secure are financial transactions compared to Apple Pay/Google Pay?",
+    question: "Can hackers, companies, or even TerraCrypt read my data?",
     answer: [
-      "We eliminate critical vulnerabilities of mainstream payment systems:",
-    ],
-    points: [
-      "End-to-end encrypted transactions where processors never see cleartext",
-      "Hardware-bound authentication instead of centralized servers",
-      "Man-in-the-middle attack protection via cryptographic proof",
-      "No single point of failure - unlike Visa/Mastercard's centralized systems",
+      "No. Not hackers, not companies, not even TerraCrypt itself can unlock your information. Only you (and the people you choose) have the key.",
     ],
   },
   {
-    question:
-      "What happens if I lose my device and I have Face ID/App Lock enabled?",
+    question: "Is my money safe if I use TerraCrypt for payments?",
     answer: [
-      "Your data stays safe. No one can access the app or your messages without your Face ID, fingerprint, or app lock PIN—even if they have your device.",
-    ],
-    points: [
-      "App lock prevents unauthorized access to your data",
-      "Face ID or biometric lock is required to open the app",
-      "You can remotely wipe the app if needed",
+      "Yes. We use the same advanced protection as the world’s top cryptocurrencies and banks, but designed to be easy and private for you.",
     ],
   },
   {
-    question: "What happens if I lose my password?",
-    answer: ["For your security, passwords cannot be recovered or reset."],
-    points: [
-      "If you lose your password, you will need to create a new account",
-      "All your messages and app data will be permanently deleted",
-      "We recommend saving your password and any recovery codes in a secure place",
-    ],
-  },
-  {
-    question: "How does this comply with regulations like GDPR and NIS 2?",
-    answer: ["We exceed compliance requirements through our architecture:"],
-    points: [
-      "NIS 2: Full hardware key protection + Perfect Forward Secrecy",
-      "GDPR: True data minimization - we cannot access user data",
-      "HIPAA/GLBA: Military-grade protection for sensitive data",
-      "CMMC/DFARS: Ready for defense contractor deployments",
-    ],
-  },
-  {
-    question: "Why Rust for the cryptographic SDK?",
-    answer: ["We chose Rust for its unparalleled security and performance:"],
-    points: [
-      "Memory safety prevents 70% of critical vulnerabilities",
-      "Performance matches OpenSSL with native code compilation",
-      "Modern tooling with built-in package management",
-      "Secure hardware integration capabilities",
-    ],
-  },
-  {
-    question: "When will the messenger/payment apps be available?",
-    answer: ["Our development roadmap includes these key milestones:"],
-    points: [
-      "Messenger MVP: Q4 2025 (Signal/WhatsApp alternative)",
-      "Encrypted Email: Q2 2026 (ProtonMail successor)",
-      "Payment System: Pilot with financial institutions in 4Q 2025",
-    ],
-  },
-  {
-    question: "How can enterprises or governments implement this?",
-    answer: ["We offer flexible deployment options for organizations:"],
-    points: [
-      "Full technology acquisition ",
-      "Annual licensing",
-      "Module integration",
-    ],
-  },
-  {
-    question: "What makes your solution quantum-resistant?",
-    answer: ["Our quantum protection strategy includes multiple layers:"],
-    points: [
-      "Elliptic curve cryptography with secp256k1 (currently quantum-resistant)",
-      "Designed for easy migration to post-quantum algorithms",
-      "Input/output obfuscation defeats quantum pattern analysis",
-      "Session keys are ephemeral and never stored",
-    ],
-  },
-  {
-    question: "How does this compare to blockchain security?",
+    question: "If I lose my device or password, can anyone recover my data?",
     answer: [
-      "We leverage blockchain's strongest security principles while adding:",
+      "For your safety, no one—not even us—can recover your secrets without your password or device. Please keep your password safe!",
     ],
-    points: [
-      "Same secp256k1 curve used in Bitcoin/Ethereum",
-      "Hardware-level key protection beyond typical crypto wallets",
-      "Perfect Forward Secrecy - unlike permanent blockchain transactions",
-      "Side-channel protection not found in most blockchain implementations",
+  },
+  {
+    question: "Is TerraCrypt only for messages?",
+    answer: [
+      "No, it protects any kind of digital information: messages, payments, files, photos, and more.",
+    ],
+  },
+  {
+    question: "Do I need to be a tech expert to use TerraCrypt?",
+    answer: [
+      "Not at all. TerraCrypt is made for everyone. If you can use email or your phone, you can protect your data with us.",
+    ],
+  },
+  {
+    question: "How is TerraCrypt different from regular encryption apps?",
+    answer: [
+      "TerraCrypt uses extra-secure, open technology (no government backdoors) and never stores your private keys—or your messages—on our servers. Everything stays with you.",
+    ],
+  },
+  {
+    question: "Why should I care about encrypting my data?",
+    answer: [
+      "Encryption protects you from hackers, spying, and data theft. It keeps your private life, money, and information truly private—no matter who tries to get in.",
     ],
   },
 ];

@@ -77,6 +77,7 @@ const cr = {
     loadMore: "Učitaj više značajki",
     useOneOrAll: "Koristite jednu ili sve.",
     subtitle: "Svaka značajka radi samostalno ili kao platforma.",
+    platforms: "Platforme",
   },
   faq: {
     heading: "Često postavljana pitanja",

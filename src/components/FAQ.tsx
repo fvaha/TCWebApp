@@ -48,68 +48,32 @@ export default function FAQGrid() {
             <div
               key={faq.question}
               onClick={() => toggle(i)}
-              className={`flex flex-col cursor-pointer rounded-xl border border-gold bg-white p-5 shadow transition dark:bg-neutral-950
-                hover:-translate-y-1 hover:shadow-xl`}
-              style={{
-                boxShadow: open
-                  ? "0 10px 32px rgba(212,175,55,0.12)"
-                  : undefined,
-                transform: open ? "translateY(-4px)" : undefined,
-                transition: "box-shadow 0.3s, transform 0.15s",
-              }}
+              className="cursor-pointer transition-all"
             >
-              {/* question row */}
-              <div className="flex items-start gap-3">
-                <span className="text-lg font-bold text-gold md:text-xl">
-                  Q{i + 1}.
-                </span>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gold md:text-xl">
-                    {faq.question}
-                  </h3>
-
-                  {/* answer (always rendered; collapses via CSS) */}
-                  <div
-                    className={`pt-3 overflow-hidden transition-[max-height,opacity] duration-300
-                                ${
-                                  open
-                                    ? "max-h-[800px] opacity-100"
-                                    : "max-h-0 opacity-0"
-                                }`}
-                  >
-                    {faq.answer.map((p, idx) => (
-                      <p
-                        key={idx}
-                        className="text-sm text-neutral-700 dark:text-neutral-300 md:text-base"
-                      >
-                        {p}
-                      </p>
-                    ))}
-
-                    {faq.points && (
-                      <ul className="mt-3 space-y-1.5">
-                        {faq.points.map((pt, ptIdx) => (
-                          <li
-                            key={ptIdx}
-                            className="flex items-start gap-2 text-sm text-neutral-700
-                                       dark:text-neutral-300 md:text-base"
-                          >
-                            <span className="mt-1 text-gold">●</span>
-                            <span>{pt}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-                {/* arrow */}
+              <div className="flex justify-between items-start gap-2">
+                <p className="text-lg md:text-xl text-gold">{faq.question}</p>
                 <span
-                  className={`ml-2 mt-0.5 text-xl text-gold transition-transform duration-300 ${
+                  className={`text-xl text-gold transition-transform duration-300 ${
                     open ? "rotate-180" : ""
                   }`}
                 >
                   ▼
                 </span>
+              </div>
+
+              <div
+                className={`overflow-hidden transition-[max-height,opacity] duration-300 pt-3 ${
+                  open ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
+                {faq.answer.map((p, idx) => (
+                  <p
+                    key={idx}
+                    className="text-sm text-neutral-700 dark:text-neutral-300 md:text-base"
+                  >
+                    {p}
+                  </p>
+                ))}
               </div>
             </div>
           );

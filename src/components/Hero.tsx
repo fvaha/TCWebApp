@@ -28,12 +28,10 @@ const slidesMap: Record<string, Slide[]> = {
 const NAVBAR_SHIFT = "-mt-12 pt-12";
 
 const Hero: React.FC = () => {
-  /* i18n */
   const { lang, t } = useLang();
-  const slides = slidesMap[lang] ?? slidesEn; // typed – no 'any'
-  const slideAria = t.hero.slideAria; // typed – no 'any'
+  const slides = slidesMap[lang] ?? slidesEn;
+  const slideAria = t.hero.slideAria;
 
-  /* dark-mode watch */
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
     const html = document.documentElement;
@@ -44,7 +42,6 @@ const Hero: React.FC = () => {
     return () => obs.disconnect();
   }, []);
 
-  /* slide rotation */
   const [current, setCurrent] = useState(0);
   useEffect(() => {
     const id = setInterval(
@@ -54,12 +51,24 @@ const Hero: React.FC = () => {
     return () => clearInterval(id);
   }, [slides.length]);
 
+  // Fix for mobile viewport height inconsistencies (e.g. Safari address bar)
+  useEffect(() => {
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    };
+    setVh();
+    window.addEventListener("resize", setVh);
+    return () => window.removeEventListener("resize", setVh);
+  }, []);
+
   return (
     <section
-      className={`full-bleed relative flex flex-col items-center
-                  min-h-screen overflow-hidden text-center
+      className={`hero-section relative flex flex-col items-center
+                  overflow-hidden text-center
                   bg-white dark:bg-black transition-colors duration-300
                   ${NAVBAR_SHIFT}`}
+      style={{ minHeight: "calc(var(--vh, 1vh) * 100)" }}
     >
       <EllipticCurveCanvas isDark={isDark} />
 
@@ -104,8 +113,8 @@ const Hero: React.FC = () => {
         ))}
       </div>
 
-      {/* dots */}
-      <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center space-x-2">
+      {/* sticky dot navigation (won’t jump on mobile Safari) */}
+      <div className="z-20 mt-auto sticky bottom-6 flex justify-center space-x-2">
         {slides.map((_, idx) => (
           <button
             key={idx}

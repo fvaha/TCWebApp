@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: "0.0.0.0", // Listens on all network interfaces
-    port: 5173, // You can specify a port or leave it to default
+    port: 5173,
+    proxy: {
+      // Proxy API requests to your Hono backend
+      "/api": "http://127.0.0.1:5174",
+    },
   },
 });

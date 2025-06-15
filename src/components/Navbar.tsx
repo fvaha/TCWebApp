@@ -58,7 +58,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDark }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-white dark:bg-black border-b border-gold/50 transition-colors">
+    <nav className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gold/50 transition-colors">
       <div className="max-w-7xl mx-auto flex items-center justify-between py-3 px-6">
         {/* Logo/brand */}
         <span className="text-xl font-bold text-gold select-none">

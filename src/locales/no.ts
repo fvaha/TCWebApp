@@ -76,6 +76,7 @@ const no = {
     loadMore: "Last inn flere funksjoner",
     useOneOrAll: "Bruk én eller alle.",
     subtitle: "Hver funksjon fungerer frittstående eller som plattform.",
+    platforms: "Plattformer",
   },
   faq: {
     heading: "Ofte stilte spørsmål",

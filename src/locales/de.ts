@@ -76,6 +76,7 @@ const de = {
     loadMore: "Weitere Funktionen laden",
     useOneOrAll: "Nutzen Sie eine oder alle.",
     subtitle: "Jede Funktion funktioniert eigenständig oder als Plattform.",
+    platforms: "Plattformen",
   },
   faq: {
     heading: "Häufig gestellte Fragen",

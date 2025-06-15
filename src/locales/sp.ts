@@ -77,6 +77,7 @@ const sp = {
     useOneOrAll: "Usa una o todas.",
     subtitle:
       "Cada función funciona de forma independiente o como una plataforma.",
+    platforms: "Plataformas",
   },
   faq: {
     heading: "Preguntas Frecuentes",

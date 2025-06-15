@@ -80,6 +80,7 @@ const en = {
     loadMore: "Load More Features",
     useOneOrAll: "Use one or all.",
     subtitle: "Each feature works standalone or as a platform.",
+    platforms: "Platforms",
   },
   faq: {
     heading: "Frequently Asked Questions",
