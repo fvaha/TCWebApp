@@ -2,10 +2,11 @@
 FROM node:20.13.1-alpine AS builder
 WORKDIR /app
 
-# Copy only what’s needed for install and build
+# Copy only what's necessary for installing dependencies and building
 COPY package*.json ./
 COPY tsconfig*.json ./
 COPY vite.config.ts ./
+COPY index.html ./               # ✅ Required for Vite build
 COPY public ./public
 COPY src ./src
 COPY backend ./backend
@@ -14,30 +15,30 @@ COPY backend ./backend
 RUN npm install --force
 RUN npm run build
 
-# Stage 2: Serve frontend with NGINX and backend with Node
+# Stage 2: Final image with backend and NGINX for frontend
 FROM alpine:latest AS final
 WORKDIR /app
 
-# Install only runtime tools
+# Install only necessary system tools
 RUN apk add --no-cache nginx nodejs npm
 
-# Copy frontend build output to NGINX
+# Copy built frontend to NGINX root
 COPY --from=builder /app/dist /var/www/html
 
 # Copy NGINX config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy backend code and runtime files
+# Copy backend build output and required files
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/backend ./backend
+COPY --from=builder /app/backend/server.ts ./backend/server.ts
 
-# Install only production dependencies (based on copied package.json)
+# Install only production dependencies
 RUN npm install --omit=dev && npm cache clean --force
 
-# Expose NGINX (frontend) and backend (API) ports
+# Expose NGINX and backend ports
 EXPOSE 8181
 EXPOSE 5174
 
-# Start backend and NGINX together
+# Start both backend and frontend servers
 CMD ["sh", "-c", "node dist/server.js & nginx -g 'daemon off;'"]
