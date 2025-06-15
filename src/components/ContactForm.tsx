@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLang } from "../components/LanguageContext";
 
 type ContactTopic = string | { bold: string; text: string };
@@ -47,28 +47,22 @@ export default function ContactForm() {
         setWidgetReady(false);
       },
     });
-    if (widgetTimer.current) {
-      clearTimeout(widgetTimer.current);
-    }
+    if (widgetTimer.current) clearTimeout(widgetTimer.current);
     widgetTimer.current = window.setTimeout(renderTurnstile, 15 * 60 * 1000);
   };
 
   useEffect(() => {
     renderTurnstile();
     return () => {
-      if (widgetTimer.current) {
-        clearTimeout(widgetTimer.current);
-      }
+      if (widgetTimer.current) clearTimeout(widgetTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDark]);
 
-  // Form state
   const [submitting, setSubmitting] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
   const [errors, setErrors] = useState<string | null>(null);
 
-  // Form submission
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrors(null);
@@ -107,7 +101,6 @@ export default function ContactForm() {
       }
     : { backgroundColor: "#fff" };
 
-  // --- Success view ---
   if (succeeded) {
     return (
       <section
@@ -122,7 +115,6 @@ export default function ContactForm() {
     );
   }
 
-  // --- Form view ---
   return (
     <section
       id="contact"
@@ -137,49 +129,30 @@ export default function ContactForm() {
           {t.contact.heading}
         </h2>
         <div className="flex flex-col md:flex-row gap-10">
-          {/* --- FORM --- */}
           <form
             onSubmit={onSubmit}
             autoComplete="off"
             className="flex-1 bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow p-8 space-y-6 border border-gold/20 backdrop-blur"
           >
             <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  placeholder={t.contact.namePlaceholder}
-                  className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
-                    isDark
-                      ? "bg-neutral-900 text-white placeholder:text-neutral-400"
-                      : "bg-white text-black placeholder:text-neutral-500"
-                  }`}
-                />
-              </div>
-              <div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder={t.contact.emailPlaceholder}
-                  className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
-                    isDark
-                      ? "bg-neutral-900 text-white placeholder:text-neutral-400"
-                      : "bg-white text-black placeholder:text-neutral-500"
-                  }`}
-                />
-              </div>
-            </div>
-            <div>
-              <textarea
-                id="message"
-                name="message"
+              <input
+                id="name"
+                name="name"
+                type="text"
                 required
-                rows={6}
-                placeholder={t.contact.messagePlaceholder}
+                placeholder={t.contact.namePlaceholder}
+                className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
+                  isDark
+                    ? "bg-neutral-900 text-white placeholder:text-neutral-400"
+                    : "bg-white text-black placeholder:text-neutral-500"
+                }`}
+              />
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder={t.contact.emailPlaceholder}
                 className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
                   isDark
                     ? "bg-neutral-900 text-white placeholder:text-neutral-400"
@@ -187,6 +160,18 @@ export default function ContactForm() {
                 }`}
               />
             </div>
+            <textarea
+              id="message"
+              name="message"
+              required
+              rows={6}
+              placeholder={t.contact.messagePlaceholder}
+              className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
+                isDark
+                  ? "bg-neutral-900 text-white placeholder:text-neutral-400"
+                  : "bg-white text-black placeholder:text-neutral-500"
+              }`}
+            />
             <div className="flex justify-center items-center">
               <div id="turnstile-widget" />
             </div>
@@ -214,7 +199,7 @@ export default function ContactForm() {
               </button>
             </div>
           </form>
-          {/* --- INFO --- */}
+
           <div className="flex-1 flex flex-col justify-center">
             <div className="bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow p-8 border border-gold/20 backdrop-blur space-y-5">
               <h3 className="text-2xl font-bold text-gold mb-3">

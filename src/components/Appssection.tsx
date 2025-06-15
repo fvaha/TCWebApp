@@ -1,11 +1,4 @@
-import React from "react";
-import {
-  FaApple,
-  FaAndroid,
-  FaWindows,
-  FaLinux,
-  FaRust,
-} from "react-icons/fa6";
+import { FaApple, FaWindows, FaLinux, FaRust } from "react-icons/fa6";
 import { SiAppstore, SiGoogleplay } from "react-icons/si";
 import { useLang } from "../components/LanguageContext";
 
