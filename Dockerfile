@@ -1,12 +1,15 @@
-# Build stage (secure, small, LTS)
+# Build stage
 FROM node:20.13.1-alpine AS builder
 WORKDIR /app
 COPY . .
-RUN npm install --legacy-peer-deps
+RUN npm install --force
 RUN npm run build
 
-# Production stage (secure NGINX)
-FROM nginx:1.27.0-alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Production stage with Node (not NGINX now)
+FROM node:20.13.1-alpine
+WORKDIR /app
+
+COPY --from=builder /app /app
+ENV NODE_ENV production
+
+CMD ["node", "dist/server.js"]

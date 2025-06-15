@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
     "dev:api": "tsx src/server.ts",
-    "dev:all": "concurrently \"vite\" \"tsx src/server.ts\""
+    "dev:all": "concurrently -k -n FRONTEND,BACKEND -c magenta,cyan \"npm run dev\" \"npm run dev:api\"",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@hono/node-server": "^1.14.4",
