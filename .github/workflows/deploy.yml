@@ -29,17 +29,6 @@ jobs:
           push: true
           tags: vahanp/tcwebapp:latest
 
-      - name: Upload .env file to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 7771
-          source: .env
-          target: /home/${{ secrets.SERVER_USER }}/tcwebapp/.env
-          overwrite: true
-
       - name: Deploy to Ubuntu Server via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -49,6 +38,11 @@ jobs:
           port: 7771
           script: |
             mkdir -p /home/${{ secrets.SERVER_USER }}/tcwebapp
+
+            if [ ! -f /home/${{ secrets.SERVER_USER }}/tcwebapp/.env ]; then
+              echo ".env file missing on server!"
+              exit 1
+            fi
 
             docker pull vahanp/tcwebapp:latest
             docker rm -f tcwebapp || true
