@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "tsx src/server.ts",
+    "dev:api": "tsx backend/server.ts",
     "dev:all": "concurrently -k -n FRONTEND,BACKEND -c magenta,cyan \"npm run dev\" \"npm run dev:api\"",
-    "build": "tsc -p tsconfig.node.json && vite build",
+    "build:backend": "tsc -p tsconfig.node.json",
+    "build": "npm run build:backend && vite build",
     "preview": "vite preview",
     "lint": "eslint ."
   },
