@@ -2,6 +2,9 @@
 FROM node:20.13.1-alpine AS builder
 WORKDIR /app
 
+# Copy env file just for frontend build (DO NOT include in final image)
+COPY .env .env
+
 # Copy source code
 COPY . .
 
@@ -22,17 +25,17 @@ COPY --from=builder /app/dist /var/www/html
 # Copy NGINX config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy only needed backend files
+# Copy only backend essentials
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/server.ts ./src/server.ts
+COPY --from=builder /app/backend/server.ts ./backend/server.ts
 
-# Install production dependencies only
+# Install only production dependencies
 RUN npm install --omit=dev && npm cache clean --force
 
-# Expose ports
+# Expose frontend (served by nginx) and backend API (Hono)
 EXPOSE 8181
 EXPOSE 5174
 
-# Start both backend and frontend servers
+# Start both servers
 CMD ["sh", "-c", "node dist/server.js & nginx -g 'daemon off;'"]
