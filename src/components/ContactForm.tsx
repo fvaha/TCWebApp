@@ -19,6 +19,11 @@ export default function ContactForm() {
 
   // Turnstile logic
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
+  console.log("Turnstile site key at runtime:", siteKey); 
+  // For manual testing in browser console:
+  // @ts-expect-error
+  window.turnstileSiteKey = siteKey;
+
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [widgetReady, setWidgetReady] = useState(false);
   const widgetTimer = useRef<number | null>(null);
@@ -31,6 +36,7 @@ export default function ContactForm() {
     container.innerHTML = "";
     setTurnstileToken(null);
     setWidgetReady(false);
+    console.log("Rendering Turnstile with siteKey:", siteKey, "Theme:", isDark ? "dark" : "light"); // 🔥 DEBUG
     turnstile.render(container, {
       sitekey: siteKey,
       theme: isDark ? "dark" : "light",
@@ -67,7 +73,7 @@ export default function ContactForm() {
     e.preventDefault();
     setErrors(null);
     if (!turnstileToken) {
-      alert("⚠️ Please complete the security check first.");
+      alert("Please complete the security check first.");
       return;
     }
     setSubmitting(true);
@@ -101,7 +107,7 @@ export default function ContactForm() {
       }
     : { backgroundColor: "#fff" };
 
-  // 🔴 Site key error check: Show nice message instead of blank/black
+  // Site key error check: Show nice message instead of blank/black
   if (!siteKey) {
     return (
       <section className="flex flex-col justify-center items-center h-screen bg-black text-white">
