@@ -2,11 +2,11 @@
 FROM node:20.13.1-alpine AS builder
 WORKDIR /app
 
-# Copy only what's necessary for installing dependencies and building
+# Copy only necessary files for installing deps and building
 COPY package*.json ./
 COPY tsconfig*.json ./
 COPY vite.config.ts ./
-COPY index.html ./               # ✅ Required for Vite build
+COPY ./index.html ./index.html           
 COPY public ./public
 COPY src ./src
 COPY backend ./backend
@@ -22,13 +22,13 @@ WORKDIR /app
 # Install only necessary system tools
 RUN apk add --no-cache nginx nodejs npm
 
-# Copy built frontend to NGINX root
+# Copy built frontend to NGINX path
 COPY --from=builder /app/dist /var/www/html
 
 # Copy NGINX config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy backend build output and required files
+# Copy backend and dependencies
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/backend/server.ts ./backend/server.ts
@@ -36,7 +36,7 @@ COPY --from=builder /app/backend/server.ts ./backend/server.ts
 # Install only production dependencies
 RUN npm install --omit=dev && npm cache clean --force
 
-# Expose NGINX and backend ports
+# Expose frontend (NGINX) and backend (Hono) ports
 EXPOSE 8181
 EXPOSE 5174
 
