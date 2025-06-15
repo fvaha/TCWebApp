@@ -33,22 +33,28 @@ WORKDIR /app
 # Install production dependencies and nginx
 RUN apk add --no-cache nginx
 
-# Copy only necessary files from builder
+# Create backend directory
+RUN mkdir -p ./backend
+
+# Copy frontend assets
 COPY --from=builder /app/dist /var/www/html
-COPY --from=builder /app/dist/backend ./backend
-COPY --from=builder /app/backend/package.json ./backend/package.json
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Install production dependencies for backend
-RUN cd backend && npm install --production
+# Copy compiled backend files if they exist
+COPY --from=builder /app/backend ./backend
+
+# Install production dependencies for backend if package.json exists
+RUN if [ -f "./backend/package.json" ]; then \
+      cd backend && npm install --production; \
+    fi
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s \
   CMD wget -qO- http://localhost:8181 || exit 1
 
 # Expose ports
-EXPOSE 8181  
-EXPOSE 5174 
+EXPOSE 8181  # Nginx
+EXPOSE 5174  # Backend API
 
 # Start services
-CMD ["sh", "-c", "node backend/server.js & nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "if [ -f \"./backend/server.js\" ]; then node backend/server.js & fi; nginx -g 'daemon off;'"]
