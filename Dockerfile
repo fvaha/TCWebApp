@@ -2,42 +2,42 @@
   FROM node:20.13.1-alpine AS builder
   WORKDIR /app
   
-  # Copy files needed for installation and build
+  # Copy necessary files for dependency install and build
   COPY .env ./
   COPY package*.json ./
   COPY tsconfig*.json ./
   COPY vite.config.ts ./
   COPY index.html ./
   
-  # Copy frontend and backend source files
+  # Copy frontend and backend sources
   COPY public ./public
   COPY src ./src
   COPY backend ./backend
   
-  # Install dependencies
+  # Install all dependencies
   RUN npm install --force
   
   # Build backend (TypeScript) and frontend (Vite)
   RUN npm run build
   
-  # ------------ Stage 2: Final runtime image with Node and NGINX ------------
+  # ------------ Final Image: Slim Node + NGINX + compiled backend ------------
   FROM node:20.13-alpine AS final
   WORKDIR /app
   
-  # Install only NGINX (Node already included)
+  # Install nginx only
   RUN apk add --no-cache nginx
   
-  # Copy built frontend files to nginx web root
+  # Copy built frontend to nginx web root
   COPY --from=builder /app/dist /var/www/html
   COPY nginx.conf /etc/nginx/nginx.conf
   
-  # Copy compiled backend JavaScript from build output
-  COPY --from=builder /app/dist/backend /app/backend
+  # Correct backend path: Copy compiled backend JS
+  COPY --from=builder /app/build/backend ./backend
   
-  # Expose frontend (NGINX) and backend (Node API) ports
+  # Expose ports
   EXPOSE 8181
   EXPOSE 5174
   
-  # Start backend server and NGINX
-  CMD ["sh", "-c", "node /app/backend/server.js & nginx -g 'daemon off;'"]
+  # Start backend + NGINX together
+  CMD ["sh", "-c", "node backend/server.js & nginx -g 'daemon off;'"]
   
