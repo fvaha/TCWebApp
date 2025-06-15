@@ -33,6 +33,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 7771
           script: |
+            # Make sure .env exists on server and is secure
+            mkdir -p /home/${{ secrets.SERVER_USER }}/tcwebapp
+            chmod 600 /home/${{ secrets.SERVER_USER }}/tcwebapp/.env
+
+            # Pull latest image and restart container
             docker pull vahanp/tcwebapp:latest
             docker rm -f tcwebapp || true
-            docker run -d --name tcwebapp -p 8181:80 --restart always vahanp/tcwebapp:latest
+            docker run -d \
+              --name tcwebapp \
+              -p 8181:80 \
+              --env-file /home/${{ secrets.SERVER_USER }}/tcwebapp/.env \
+              --restart always \
+              vahanp/tcwebapp:latest
