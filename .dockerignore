@@ -1,5 +1,0 @@
-node_modules
-.git
-*.log
-# allow dist/backend to be included
-!dist/backend
