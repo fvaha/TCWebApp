@@ -1,74 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, ValidationError } from "@formspree/react";
+import ReCAPTCHA from "react-google-recaptcha";
 import { useLang } from "../components/LanguageContext";
 
 type ContactTopic = string | { bold: string; text: string };
 
-// Your Google reCAPTCHA site key
 const RECAPTCHA_SITE_KEY = "6Le-P2MrAAAAALS4taUTV8ZTbC5DqKwAGLsaj9Es";
 
 export default function ContactForm() {
   const { t } = useLang();
   const [state, handleSubmit] = useForm("xanjjnya");
-  const recaptchaRef = useRef<HTMLDivElement>(null);
-  const [recaptchaReady, setRecaptchaReady] = useState(false);
-
-  // Load reCAPTCHA script
-  useEffect(() => {
-    if ((window as any).grecaptcha) {
-      setRecaptchaReady(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.js";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setRecaptchaReady(true);
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  // Render widget when script is ready
-  useEffect(() => {
-    if (
-      recaptchaReady &&
-      (window as any).grecaptcha &&
-      recaptchaRef.current &&
-      recaptchaRef.current.childNodes.length === 0
-    ) {
-      (window as any).grecaptcha.render(recaptchaRef.current, {
-        sitekey: RECAPTCHA_SITE_KEY,
-        theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
-      });
-    }
-  }, [recaptchaReady]);
-
-  // Custom onSubmit to include reCAPTCHA token
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const token = (window as any).grecaptcha?.getResponse();
-    if (!token) {
-      alert("Please complete the reCAPTCHA!");
-      return;
-    }
-
-    // Add token to form
-    const hiddenInput = document.createElement("input");
-    hiddenInput.type = "hidden";
-    hiddenInput.name = "g-recaptcha-response";
-    hiddenInput.value = token;
-    e.currentTarget.appendChild(hiddenInput);
-
-    await handleSubmit(e);
-
-    // Reset widget
-    (window as any).grecaptcha?.reset();
-    e.currentTarget.removeChild(hiddenInput);
-  }
-
+  const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null);
   const [isDark, setIsDark] = useState(false);
+
+  // Dark mode watcher
   useEffect(() => {
     const html = document.documentElement;
     const syncTheme = () => setIsDark(html.classList.contains("dark"));
@@ -77,6 +22,27 @@ export default function ContactForm() {
     obs.observe(html, { attributes: true, attributeFilter: ["class"] });
     return () => obs.disconnect();
   }, []);
+
+  // Add g-recaptcha-response to Formspree payload
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    if (!recaptchaValue) {
+      e.preventDefault();
+      alert("Please complete the reCAPTCHA!");
+      return;
+    }
+    // Add hidden input so Formspree sees the token
+    const recaptchaInput = document.createElement("input");
+    recaptchaInput.type = "hidden";
+    recaptchaInput.name = "g-recaptcha-response";
+    recaptchaInput.value = recaptchaValue;
+    e.currentTarget.appendChild(recaptchaInput);
+
+    await handleSubmit(e);
+
+    // Reset after submit
+    e.currentTarget.removeChild(recaptchaInput);
+    setRecaptchaValue(null);
+  };
 
   const sectionStyle = isDark
     ? {
@@ -156,9 +122,12 @@ export default function ContactForm() {
                   : "bg-white text-black placeholder:text-neutral-500"
               }`}
             />
-            {/* Google reCAPTCHA v2 */}
             <div className="flex flex-col items-center">
-              <div ref={recaptchaRef} className="g-recaptcha" />
+              <ReCAPTCHA
+                sitekey={RECAPTCHA_SITE_KEY}
+                theme={isDark ? "dark" : "light"}
+                onChange={setRecaptchaValue}
+              />
             </div>
             <ValidationError prefix="Email" field="email" errors={state.errors} />
             <ValidationError prefix="Message" field="message" errors={state.errors} />
