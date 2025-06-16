@@ -62,7 +62,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 7771
           source: "dist/*"
-          target: "/var/www/terracrypt/dist"
+          target: "/home/terracrypt/public_html"
 
       - name: Deploy backend on remote server via SSH
         uses: appleboy/ssh-action@v1.0.0
