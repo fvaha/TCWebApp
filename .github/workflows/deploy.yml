@@ -46,14 +46,14 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             NODE_ENV=production
-          platforms: linux/amd64  # Add specific platform if needed
+          platforms: linux/amd64
 
       - name: Verify Docker image
         run: |
           docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
           docker inspect ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-          docker run --rm ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }} ls -la /var/www/html  # Verify frontend files
-          docker run --rm ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }} ls -la /app/backend   # Verify backend files
+          docker run --rm ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }} ls -la /var/www/html
+          docker run --rm ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }} ls -la /app/backend
 
       - name: Deploy on remote server via SSH
         uses: appleboy/ssh-action@v1.0.0
@@ -65,26 +65,20 @@ jobs:
           script: |
             set -e
             echo "=== Starting deployment ==="
-            
             mkdir -p /home/${{ secrets.SERVER_USER }}/tcwebapp
-            
             if [ ! -f /home/${{ secrets.SERVER_USER }}/tcwebapp/.env ]; then
               echo "Error: .env file missing on server"
               exit 1
             fi
-            
             docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-            
             docker rm -f tcwebapp || true
-            
             docker run -d \
               --name tcwebapp \
-              -p 80:80 \  # Changed from 8181 to match Dockerfile EXPOSE
+              -p 80:80 \
               -p 5174:5174 \
               -v /home/${{ secrets.SERVER_USER }}/tcwebapp/.env:/app/.env \
               --restart unless-stopped \
               ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-            
             echo "=== Deployment successful ==="
             docker ps -a | grep tcwebapp
-            docker logs tcwebapp
+            docker logs tcwebapp --tail 50
