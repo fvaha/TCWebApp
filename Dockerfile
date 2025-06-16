@@ -21,8 +21,9 @@ CMD ["nginx", "-g", "daemon off;"]
 FROM node:20.13-alpine AS backend
 WORKDIR /app
 COPY --from=builder /app/backend/dist ./dist
-COPY --from=builder /app/backend/package*.json ./
+COPY --from=builder /app/package*.json ./
 RUN npm install --omit=dev
 ENV NODE_ENV=production
 EXPOSE 5174
 CMD ["node", "dist/server.js"]
+
