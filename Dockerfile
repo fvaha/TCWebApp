@@ -1,8 +1,6 @@
 FROM node:20.13.1-alpine AS builder
 WORKDIR /app
-
 COPY package*.json ./
-COPY package-lock.json ./
 COPY tsconfig*.json ./
 COPY vite.config.ts ./
 COPY tailwind.config.js ./
@@ -11,20 +9,20 @@ COPY index.html ./
 COPY backend/ ./backend
 COPY src/ ./src
 COPY public/ ./public
-
 RUN npm install
 RUN npm run build
-RUN ls -lh /app/dist/assets && (cat /app/dist/assets/index-*.css | head -20 || echo "No CSS found!")
 
-FROM node:20.13-alpine
+FROM nginx:1.27-alpine AS frontend
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+FROM node:20.13-alpine AS backend
 WORKDIR /app
-
-COPY --from=builder /app/backend/dist ./backend
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/package-lock.json ./
+COPY --from=builder /app/backend/dist ./dist
+COPY --from=builder /app/backend/package*.json ./
 RUN npm install --omit=dev
-
-COPY --from=builder /app/dist /app/frontend
-
+ENV NODE_ENV=production
 EXPOSE 5174
-CMD ["node", "backend/server.js"]
+CMD ["node", "dist/server.js"]
