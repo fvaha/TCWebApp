@@ -15,8 +15,9 @@
     "dev:api": "tsx watch backend/server.ts",
     "dev:all": "concurrently -k -n FRONTEND,BACKEND -c magenta,cyan \"npm run dev\" \"npm run dev:api\"",
     "preview": "vite preview",
-    "start": "node dist/backend/server.js",
-    "lint": "eslint . --ext .ts,.tsx,.js"
+    "start": "node backend/server.js",
+    "lint": "eslint . --ext .ts,.tsx,.js",
+    "prepare": "echo 'ready'"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.4",

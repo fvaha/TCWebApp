@@ -14,8 +14,12 @@ RUN npm install && npm run build
 FROM node:20.13-alpine
 WORKDIR /app
 
-COPY --from=builder /app/dist /app/frontend
 COPY --from=builder /app/backend/dist ./backend
+COPY --from=builder /app/package*.json ./
+RUN npm install --omit=dev
 
-EXPOSE 5173 5174
-CMD ["sh", "-c", "node backend/server.js & vite preview --host 0.0.0.0 --port 5173"]
+# ALSO copy frontend build to image so GitHub Actions can extract it if you want (optional)
+COPY --from=builder /app/dist /app/frontend
+
+EXPOSE 5174
+CMD ["node", "backend/server.js"]
