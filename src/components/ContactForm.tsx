@@ -151,7 +151,6 @@ export default function ContactForm() {
               >
                 {state.submitting ? "…" : t.contact?.send || "Send"}
               </button>
-              <div style={{ margin: 20, padding: 20, border: "1px solid blue" }}>
             </div>
           </form>
 
