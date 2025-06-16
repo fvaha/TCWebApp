@@ -18,7 +18,6 @@ COPY --from=builder /app/backend/dist ./backend
 COPY --from=builder /app/package*.json ./
 RUN npm install --omit=dev
 
-# ALSO copy frontend build to image so GitHub Actions can extract it if you want (optional)
 COPY --from=builder /app/dist /app/frontend
 
 EXPOSE 5174
