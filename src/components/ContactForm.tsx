@@ -16,10 +16,9 @@ export default function ContactForm() {
     return () => obs.disconnect();
   }, []);
 
-  const siteKey = "0x4AAAAAABgxYdNBr1gcmk5n"; // hardcoded safely
+  const siteKey = "0x4AAAAAABgxYdNBr1gcmk5n";
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [widgetReady, setWidgetReady] = useState(false);
   const [expired, setExpired] = useState(false);
   const widgetTimer = useRef<number | null>(null);
 
@@ -28,13 +27,11 @@ export default function ContactForm() {
     const container = document.getElementById("turnstile-widget");
 
     if (!turnstile || !container || !siteKey) {
-      console.error("Turnstile render failed: missing script, container, or siteKey");
       return;
     }
 
     container.innerHTML = "";
     setTurnstileToken(null);
-    setWidgetReady(false);
     setExpired(false);
 
     turnstile.render(container, {
@@ -42,17 +39,14 @@ export default function ContactForm() {
       theme: isDark ? "dark" : "light",
       callback: (token: string) => {
         setTurnstileToken(token);
-        setWidgetReady(true);
         setExpired(false);
       },
       "expired-callback": () => {
         setTurnstileToken(null);
-        setWidgetReady(false);
         setExpired(true);
       },
       "error-callback": () => {
         setTurnstileToken(null);
-        setWidgetReady(false);
         setExpired(true);
       },
     });
@@ -63,8 +57,20 @@ export default function ContactForm() {
 
   useEffect(() => {
     if (!siteKey) return;
-    renderTurnstile();
+    let cancelled = false;
+
+    function tryRender() {
+      if (cancelled) return;
+      if ((window as any).turnstile && document.getElementById("turnstile-widget")) {
+        renderTurnstile();
+      } else {
+        setTimeout(tryRender, 100);
+      }
+    }
+    tryRender();
+
     return () => {
+      cancelled = true;
       if (widgetTimer.current) clearTimeout(widgetTimer.current);
     };
   }, [isDark]);
@@ -197,9 +203,9 @@ export default function ContactForm() {
             <div className="text-center">
               <button
                 type="submit"
-                disabled={submitting || (!widgetReady && !succeeded)}
+                disabled={submitting}
                 className={`bg-gold text-black font-bold py-3 px-8 rounded-lg transition duration-300 ${
-                  submitting || (!widgetReady && !succeeded)
+                  submitting
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-yellow-500"
                 }`}

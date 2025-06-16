@@ -25,7 +25,7 @@ if (!TURNSTILE_SECRET) {
 
 const app = new Hono()
 
-app.post('/api/contact', async (c) => {
+app.post('/api', async (c) => {
   try {
     const { token, name, email, message } = await c.req.json<ContactForm>()
 
