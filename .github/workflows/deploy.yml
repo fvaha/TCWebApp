@@ -54,6 +54,16 @@ jobs:
           docker cp tcwebapp_tmp:/app/frontend ./dist
           docker rm tcwebapp_tmp
 
+      - name: Remove old dist on server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 7771
+          script: |
+            rm -rf /home/terracrypt/public_html/dist
+
       - name: Upload frontend to server via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -61,8 +71,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 7771
-          source: "dist/*"
-          target: "/var/www/terracrypt/dist"
+          source: "dist"
+          target: "/home/terracrypt/public_html"
 
       - name: Deploy backend on remote server via SSH
         uses: appleboy/ssh-action@v1.0.0
