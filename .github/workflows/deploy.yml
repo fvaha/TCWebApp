@@ -1,7 +1,9 @@
 name: Build and Deploy Frontend Static
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+
 
 jobs:
   build-and-deploy:
