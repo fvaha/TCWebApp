@@ -13,7 +13,7 @@ export default function ContactForm() {
   const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null);
   const [isDark, setIsDark] = useState(false);
 
-  // Dark mode watcher
+  // Watch dark mode for recaptcha theming
   useEffect(() => {
     const html = document.documentElement;
     const syncTheme = () => setIsDark(html.classList.contains("dark"));
@@ -23,14 +23,14 @@ export default function ContactForm() {
     return () => obs.disconnect();
   }, []);
 
-  // Add g-recaptcha-response to Formspree payload
+  // Custom submit handler for adding g-recaptcha-response
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     if (!recaptchaValue) {
       e.preventDefault();
       alert("Please complete the reCAPTCHA!");
       return;
     }
-    // Add hidden input so Formspree sees the token
+    // Dynamically add hidden field for recaptcha
     const recaptchaInput = document.createElement("input");
     recaptchaInput.type = "hidden";
     recaptchaInput.name = "g-recaptcha-response";
@@ -44,6 +44,7 @@ export default function ContactForm() {
     setRecaptchaValue(null);
   };
 
+  // Section styling (unchanged)
   const sectionStyle = isDark
     ? {
         backgroundImage: "url('/contact-bg.jpg')",
@@ -81,6 +82,8 @@ export default function ContactForm() {
         <div className="flex flex-col md:flex-row gap-10">
           <form
             onSubmit={onSubmit}
+            action="https://formspree.io/f/xanjjnya" // <-- This makes it static-friendly!
+            method="POST"
             autoComplete="off"
             className="flex-1 bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow p-8 space-y-6 border border-gold/20 backdrop-blur"
           >
