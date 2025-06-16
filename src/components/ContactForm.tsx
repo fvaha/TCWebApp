@@ -6,7 +6,6 @@ type ContactTopic = string | { bold: string; text: string };
 export default function ContactForm() {
   const { t } = useLang();
 
-  // Theme sync for Turnstile
   const [isDark, setIsDark] = useState(false);
   useEffect(() => {
     const html = document.documentElement;
@@ -17,15 +16,13 @@ export default function ContactForm() {
     return () => obs.disconnect();
   }, []);
 
-  // Turnstile logic
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAABgxYdNBr1gcmk5n";
-    console.log("Turnstile site key at runtime:", siteKey); 
-  // For manual testing in browser console:
   // @ts-expect-error
   window.turnstileSiteKey = siteKey;
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [widgetReady, setWidgetReady] = useState(false);
+  const [expired, setExpired] = useState(false);
   const widgetTimer = useRef<number | null>(null);
 
   const renderTurnstile = () => {
@@ -36,21 +33,25 @@ export default function ContactForm() {
     container.innerHTML = "";
     setTurnstileToken(null);
     setWidgetReady(false);
-    console.log("Rendering Turnstile with siteKey:", siteKey, "Theme:", isDark ? "dark" : "light"); // 🔥 DEBUG
+    setExpired(false);
+
     turnstile.render(container, {
       sitekey: siteKey,
       theme: isDark ? "dark" : "light",
       callback: (token: string) => {
         setTurnstileToken(token);
         setWidgetReady(true);
+        setExpired(false);
       },
       "expired-callback": () => {
         setTurnstileToken(null);
         setWidgetReady(false);
+        setExpired(true);
       },
       "error-callback": () => {
         setTurnstileToken(null);
         setWidgetReady(false);
+        setExpired(true);
       },
     });
     if (widgetTimer.current) clearTimeout(widgetTimer.current);
@@ -73,6 +74,7 @@ export default function ContactForm() {
     e.preventDefault();
     setErrors(null);
     if (!turnstileToken) {
+      setExpired(true);
       alert("Please complete the security check first.");
       return;
     }
@@ -80,7 +82,7 @@ export default function ContactForm() {
     const formData = new FormData(e.currentTarget);
     const data: Record<string, string> = {};
     for (const [key, value] of formData.entries()) data[key] = String(value);
-    data["cf-turnstile-response"] = turnstileToken;
+    data["token"] = turnstileToken || "";
 
     try {
       const res = await fetch("/api/contact", {
@@ -89,7 +91,7 @@ export default function ContactForm() {
         body: JSON.stringify(data),
       });
       const json = await res.json();
-      if (json.ok) setSucceeded(true);
+      if (json.success) setSucceeded(true);
       else setErrors(json.error || "Unknown error.");
     } catch {
       setErrors("Network/server error. Please try again later.");
@@ -107,7 +109,6 @@ export default function ContactForm() {
       }
     : { backgroundColor: "#fff" };
 
-  // Site key error check: Show nice message instead of blank/black
   if (!siteKey) {
     return (
       <section className="flex flex-col justify-center items-center h-screen bg-black text-white">
@@ -192,14 +193,14 @@ export default function ContactForm() {
                   : "bg-white text-black placeholder:text-neutral-500"
               }`}
             />
-            <div className="flex justify-center items-center">
+            <div className="flex flex-col items-center">
               <div id="turnstile-widget" />
+              {expired && (
+                <div className="text-yellow-600 text-center font-medium mt-2">
+                  Security check expired — please solve again!
+                </div>
+              )}
             </div>
-            <input
-              type="hidden"
-              name="cf-turnstile-response"
-              value={turnstileToken ?? ""}
-            />
             {errors && (
               <div className="text-red-600 text-center font-medium">
                 {errors}
