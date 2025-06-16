@@ -192,7 +192,7 @@ export default function ContactForm() {
             <div className="text-center">
               <button
                 type="submit"
-                disabled={submitting || !widgetReady}
+                disabled={submitting || (!widgetReady && !succeeded)}
                 className={`bg-gold text-black font-bold py-3 px-8 rounded-lg transition duration-300 ${
                   submitting || !widgetReady
                     ? "opacity-50 cursor-not-allowed"

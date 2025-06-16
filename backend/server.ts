@@ -18,8 +18,10 @@ interface TurnstileResponse {
   cdata?: string
 }
 
-const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
-
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY ?? ''
+if (!TURNSTILE_SECRET) {
+  throw new Error('Missing TURNSTILE_SECRET_KEY environment variable')
+}
 
 const app = new Hono()
 
