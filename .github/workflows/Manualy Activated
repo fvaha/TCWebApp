@@ -1,0 +1,116 @@
+name: Manualy Activated
+
+on:
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: vahanp/tcwebapp
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: frontend
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}-frontend:latest
+            ${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: NODE_ENV=production
+          platforms: linux/amd64
+
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: backend
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}-backend:latest
+            ${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: NODE_ENV=production
+          platforms: linux/amd64
+
+  deploy:
+    needs: [build-frontend, build-backend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Upload docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 7771
+          source: "docker-compose.yml"
+          target: "/home/terracrypt"
+
+      - name: Write ENV_FILE secret to .env
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Upload .env to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 7771
+          source: ".env"
+          target: "/home/terracrypt"
+
+      - name: Deploy via SSH using docker-compose
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 7771
+          script: |
+            set -ex
+            cd /home/terracrypt
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+            docker pull ${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+            docker pull ${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
+            sed -i "s|${{ env.IMAGE_NAME }}-frontend:.*|${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}|g" docker-compose.yml
+            sed -i "s|${{ env.IMAGE_NAME }}-backend:.*|${{ env.IMAGE_NAME }}-backend:${{ github.sha }}|g" docker-compose.yml
+            docker compose down || true
+            docker compose up -d
+            docker compose ps
+            docker compose logs --tail=40
