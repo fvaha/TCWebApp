@@ -16,9 +16,7 @@ export default function ContactForm() {
     return () => obs.disconnect();
   }, []);
 
-  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAABgxYdNBr1gcmk5n";
-  // @ts-expect-error
-  window.turnstileSiteKey = siteKey;
+  const siteKey = "0x4AAAAAABgxYdNBr1gcmk5n";
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [widgetReady, setWidgetReady] = useState(false);
@@ -26,8 +24,7 @@ export default function ContactForm() {
   const widgetTimer = useRef<number | null>(null);
 
   const renderTurnstile = () => {
-    // @ts-expect-error - global injected by Turnstile script
-    const turnstile = window.turnstile;
+    const turnstile = (window as any).turnstile;
     const container = document.getElementById("turnstile-widget");
     if (!container || !turnstile) return;
     container.innerHTML = "";
@@ -54,6 +51,7 @@ export default function ContactForm() {
         setExpired(true);
       },
     });
+
     if (widgetTimer.current) clearTimeout(widgetTimer.current);
     widgetTimer.current = window.setTimeout(renderTurnstile, 15 * 60 * 1000);
   };
@@ -63,7 +61,6 @@ export default function ContactForm() {
     return () => {
       if (widgetTimer.current) clearTimeout(widgetTimer.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDark]);
 
   const [submitting, setSubmitting] = useState(false);
@@ -82,7 +79,7 @@ export default function ContactForm() {
     const formData = new FormData(e.currentTarget);
     const data: Record<string, string> = {};
     for (const [key, value] of formData.entries()) data[key] = String(value);
-    data["token"] = turnstileToken || "";
+    data["token"] = turnstileToken;
 
     try {
       const res = await fetch("/api/contact", {
@@ -109,19 +106,6 @@ export default function ContactForm() {
       }
     : { backgroundColor: "#fff" };
 
-  if (!siteKey) {
-    return (
-      <section className="flex flex-col justify-center items-center h-screen bg-black text-white">
-        <h2 className="text-2xl font-bold mb-4">Configuration error:</h2>
-        <p>
-          <b>Turnstile site key is missing.</b>
-          <br />
-          Please check your <code>.env</code> file and Docker build process!
-        </p>
-      </section>
-    );
-  }
-
   if (succeeded) {
     return (
       <section
@@ -142,9 +126,7 @@ export default function ContactForm() {
       className="relative py-24 px-6 md:px-16 transition-colors"
       style={sectionStyle}
     >
-      {isDark && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
-      )}
+      {isDark && <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />}
       <div className="relative max-w-6xl mx-auto z-10 animate-fadeInUp">
         <h2 className="text-4xl font-bold text-gold text-center mb-12">
           {t.contact.heading}
