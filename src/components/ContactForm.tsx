@@ -5,8 +5,8 @@ type ContactTopic = string | { bold: string; text: string };
 
 export default function ContactForm() {
   const { t } = useLang();
-
   const [isDark, setIsDark] = useState(false);
+
   useEffect(() => {
     const html = document.documentElement;
     const syncTheme = () => setIsDark(html.classList.contains("dark"));
@@ -17,17 +17,13 @@ export default function ContactForm() {
   }, []);
 
   const siteKey = "0x4AAAAAABgxYdNBr1gcmk5n";
-
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const widgetTimer = useRef<number | null>(null);
 
   const renderTurnstile = () => {
     const turnstile = (window as any).turnstile;
     const container = document.getElementById("turnstile-widget");
-
-    if (!turnstile || !container || !siteKey) {
-      return;
-    }
+    if (!turnstile || !container) return;
 
     container.innerHTML = "";
     setTurnstileToken(null);
@@ -35,15 +31,9 @@ export default function ContactForm() {
     turnstile.render(container, {
       sitekey: siteKey,
       theme: isDark ? "dark" : "light",
-      callback: (token: string) => {
-        setTurnstileToken(token);
-      },
-      "expired-callback": () => {
-        setTurnstileToken(null);
-      },
-      "error-callback": () => {
-        setTurnstileToken(null);
-      },
+      callback: (token: string) => setTurnstileToken(token),
+      "expired-callback": () => setTurnstileToken(null),
+      "error-callback": () => setTurnstileToken(null),
     });
 
     if (widgetTimer.current) clearTimeout(widgetTimer.current);
@@ -53,7 +43,6 @@ export default function ContactForm() {
   useEffect(() => {
     if (!siteKey) return;
     let cancelled = false;
-
     function tryRender() {
       if (cancelled) return;
       if ((window as any).turnstile && document.getElementById("turnstile-widget")) {
@@ -63,7 +52,6 @@ export default function ContactForm() {
       }
     }
     tryRender();
-
     return () => {
       cancelled = true;
       if (widgetTimer.current) clearTimeout(widgetTimer.current);
