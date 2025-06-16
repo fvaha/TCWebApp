@@ -63,26 +63,29 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 7771
           script: |
-            set -e
+            set -ex
             echo "=== Starting deployment ==="
+            
+            # Ensure directory exists
             mkdir -p /home/${{ secrets.SERVER_USER }}/tcwebapp
             
+            # Verify .env exists
             if [ ! -f /home/${{ secrets.SERVER_USER }}/tcwebapp/.env ]; then
               echo "Error: .env file missing on server"
               exit 1
             fi
             
+            # Pull latest image
             docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
             
-            echo "Stopping existing container..."
+            # Stop and remove existing container
             docker rm -f tcwebapp || true
             
-            echo "Starting services..."
+            # Start new container
             docker run -d \
               --name tcwebapp \
               -p 192.168.1.5:5173:5173 \
               -p 192.168.1.5:5174:5174 \
-              -p 192.168.1.5:8181:8181 \
               -v /home/${{ secrets.SERVER_USER }}/tcwebapp/.env:/app/.env \
               --restart unless-stopped \
               ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
@@ -90,5 +93,13 @@ jobs:
             echo "=== Deployment successful ==="
             echo "Container status:"
             docker ps -a | grep tcwebapp
+            
+            # Wait 5 seconds for services to start
+            sleep 5
+            
+            echo "Service verification:"
+            echo "- Frontend status: $(curl -s -o /dev/null -w "%{http_code}" http://192.168.1.5:5173)"
+            echo "- Backend status: $(curl -s -o /dev/null -w "%{http_code}" http://192.168.1.5:5174/api/contact -X POST)"
+            
             echo "Recent logs:"
             docker logs tcwebapp --tail 20
