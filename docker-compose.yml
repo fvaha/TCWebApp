@@ -17,7 +17,8 @@ services:
     environment:
       - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}
       - PORT=5174
-    network_mode: host
+    networks:
+      - tcnet
 
 networks:
   tcnet:
