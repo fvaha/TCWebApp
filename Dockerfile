@@ -17,5 +17,5 @@ WORKDIR /app
 COPY --from=builder /app/dist /app/frontend
 COPY --from=builder /app/backend/dist ./backend
 
-EXPOSE 5173 5174 8181
+EXPOSE 5173 5174
 CMD ["sh", "-c", "node backend/server.js & vite preview --host 0.0.0.0 --port 5173"]
