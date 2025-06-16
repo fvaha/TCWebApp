@@ -19,7 +19,6 @@ export default function ContactForm() {
   const siteKey = "0x4AAAAAABgxYdNBr1gcmk5n";
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [expired, setExpired] = useState(false);
   const widgetTimer = useRef<number | null>(null);
 
   const renderTurnstile = () => {
@@ -32,22 +31,18 @@ export default function ContactForm() {
 
     container.innerHTML = "";
     setTurnstileToken(null);
-    setExpired(false);
 
     turnstile.render(container, {
       sitekey: siteKey,
       theme: isDark ? "dark" : "light",
       callback: (token: string) => {
         setTurnstileToken(token);
-        setExpired(false);
       },
       "expired-callback": () => {
         setTurnstileToken(null);
-        setExpired(true);
       },
       "error-callback": () => {
         setTurnstileToken(null);
-        setExpired(true);
       },
     });
 
@@ -84,7 +79,6 @@ export default function ContactForm() {
     setErrors(null);
 
     if (!turnstileToken) {
-      setExpired(true);
       alert("Please complete the security check first.");
       return;
     }
@@ -191,11 +185,6 @@ export default function ContactForm() {
             />
             <div className="flex flex-col items-center">
               <div id="turnstile-widget" />
-              {expired && (
-                <div className="text-yellow-600 text-center font-medium mt-2">
-                  Security check expired — please solve again!
-                </div>
-              )}
             </div>
             {errors && (
               <div className="text-red-600 text-center font-medium">{errors}</div>
