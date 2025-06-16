@@ -6,9 +6,6 @@ on:
 
 env:
   IMAGE_NAME: vahanp/tcwebapp
-  LATEST_TAG: latest
-  COMMIT_SHA_TAG: ${{ github.sha }}
-  BACKEND_PORT: 5174
 
 jobs:
   deploy:
@@ -21,61 +18,67 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Extract secrets from ENV_FILE
-        id: extract_env
-        run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
-          echo "Extracting keys..."
-          export $(grep -E '^TURNSTILE_SECRET_KEY=' .env)
-          echo "TURNSTILE_SECRET_KEY=$TURNSTILE_SECRET_KEY" >> $GITHUB_ENV
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Docker image
+      # Build and push frontend image
+      - name: Build and Push Frontend Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
+          target: frontend
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
-            ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
+            ${{ env.IMAGE_NAME }}-frontend:latest
+            ${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            NODE_ENV=production
+          build-args: NODE_ENV=production
           platforms: linux/amd64
 
-      - name: Copy frontend build out of Docker image
-        run: |
-          docker create --name tcwebapp_tmp ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-          docker cp tcwebapp_tmp:/app/frontend ./dist
-          docker rm tcwebapp_tmp
-
-      - name: Remove old dist on server
-        uses: appleboy/ssh-action@v1.0.0
+      # Build and push backend image
+      - name: Build and Push Backend Docker image
+        uses: docker/build-push-action@v5
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 7771
-          script: |
-            rm -rf /home/terracrypt/public_html/dist
+          context: .
+          target: backend
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}-backend:latest
+            ${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: NODE_ENV=production
+          platforms: linux/amd64
 
-      - name: Upload frontend to server via SCP
+      # Upload docker-compose.yml to server
+      - name: Upload docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 7771
-          source: "dist"
-          target: "/home/terracrypt/public_html"
+          source: "docker-compose.yml"
+          target: "/home/terracrypt"
 
-      - name: Deploy backend on remote server via SSH
+      # (Optional) Upload .env file if you use it for backend secrets
+      - name: Upload .env to server
+        if: secrets.ENV_FILE != ''
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 7771
+          source: ".env"
+          target: "/home/terracrypt"
+
+      # SSH to server: login to Docker, pull images, restart stack with new compose file
+      - name: Deploy via SSH using docker-compose
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -84,16 +87,13 @@ jobs:
           port: 7771
           script: |
             set -ex
-            docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-            docker rm -f tcwebapp || true
-            docker run -d \
-              --name tcwebapp \
-              -p 192.168.1.5:${{ env.BACKEND_PORT }}:${{ env.BACKEND_PORT }} \
-              --env TURNSTILE_SECRET_KEY="${{ env.TURNSTILE_SECRET_KEY }}" \
-              --env PORT=${{ env.BACKEND_PORT }} \
-              --restart unless-stopped \
-              ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-            docker ps -a | grep tcwebapp
-            sleep 5
-            echo "Backend status: $(curl -s -o /dev/null -w "%{http_code}" http://192.168.1.5:${{ env.BACKEND_PORT }}/api/contact -X POST)"
-            docker logs tcwebapp --tail 20
+            cd /home/terracrypt
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+            docker pull ${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+            docker pull ${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
+            sed -i "s|${{ env.IMAGE_NAME }}-frontend:.*|${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}|g" docker-compose.yml
+            sed -i "s|${{ env.IMAGE_NAME }}-backend:.*|${{ env.IMAGE_NAME }}-backend:${{ github.sha }}|g" docker-compose.yml
+            docker compose down || true
+            docker compose up -d
+            docker compose ps
+            docker compose logs --tail=40
