@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   frontend:
     image: vahanp/tcwebapp-frontend:latest
@@ -17,6 +15,8 @@ services:
     environment:
       - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}
       - PORT=5174
+    ports:
+      - "5174:5174"
     networks:
       - tcnet
 
