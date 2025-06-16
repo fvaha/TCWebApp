@@ -8,8 +8,6 @@ services:
       - "8080:80"
     depends_on:
       - backend
-    networks:
-      - tcnet
 
   backend:
     image: vahanp/tcwebapp-backend:latest
@@ -19,9 +17,4 @@ services:
       - PORT=5174
     ports:
       - "5174:5174"
-    networks:
-      - tcnet
-
-networks:
-  tcnet:
-    driver: bridge
+    network_mode: host
