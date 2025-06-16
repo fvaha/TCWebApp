@@ -1,4 +1,4 @@
-name: Build, Push and Deploy
+name: Build, Push, and Deploy
 
 on:
   push:
@@ -48,14 +48,23 @@ jobs:
             NODE_ENV=production
           platforms: linux/amd64
 
-      - name: Verify Docker image
+      - name: Copy frontend build out of Docker image
         run: |
-          docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-          docker inspect ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-          docker run --rm ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }} ls -la /app/frontend
-          docker run --rm ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }} ls -la /app/backend
+          docker create --name tcwebapp_tmp ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
+          docker cp tcwebapp_tmp:/app/frontend ./dist
+          docker rm tcwebapp_tmp
 
-      - name: Deploy on remote server via SSH
+      - name: Upload frontend to server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 7771
+          source: "dist/*"
+          target: "/var/www/terracrypt/dist"
+
+      - name: Deploy backend on remote server via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -64,42 +73,20 @@ jobs:
           port: 7771
           script: |
             set -ex
-            echo "=== Starting deployment ==="
-            
-            # Ensure directory exists
             mkdir -p /home/${{ secrets.SERVER_USER }}/tcwebapp
-            
-            # Verify .env exists
             if [ ! -f /home/${{ secrets.SERVER_USER }}/tcwebapp/.env ]; then
               echo "Error: .env file missing on server"
               exit 1
             fi
-            
-            # Pull latest image
             docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-            
-            # Stop and remove existing container
             docker rm -f tcwebapp || true
-            
-            # Start new container
             docker run -d \
               --name tcwebapp \
-              -p 192.168.1.5:5173:5173 \
               -p 192.168.1.5:5174:5174 \
               -v /home/${{ secrets.SERVER_USER }}/tcwebapp/.env:/app/.env \
               --restart unless-stopped \
               ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
-            
-            echo "=== Deployment successful ==="
-            echo "Container status:"
             docker ps -a | grep tcwebapp
-            
-            # Wait 5 seconds for services to start
             sleep 5
-            
-            echo "Service verification:"
-            echo "- Frontend status: $(curl -s -o /dev/null -w "%{http_code}" http://192.168.1.5:5173)"
-            echo "- Backend status: $(curl -s -o /dev/null -w "%{http_code}" http://192.168.1.5:5174/api/contact -X POST)"
-            
-            echo "Recent logs:"
+            echo "Backend status: $(curl -s -o /dev/null -w "%{http_code}" http://192.168.1.5:5174/api/contact -X POST)"
             docker logs tcwebapp --tail 20
