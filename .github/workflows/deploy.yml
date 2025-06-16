@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4  # Updated to v4
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -23,7 +23,6 @@ jobs:
       - name: Write .env file from secret
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
-          # Validate .env has content
           if [ ! -s .env ]; then
             echo "Error: .env file is empty"
             exit 1
@@ -47,11 +46,14 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             NODE_ENV=production
+          platforms: linux/amd64  # Add specific platform if needed
 
       - name: Verify Docker image
         run: |
           docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
           docker inspect ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
+          docker run --rm ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }} ls -la /var/www/html  # Verify frontend files
+          docker run --rm ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }} ls -la /app/backend   # Verify backend files
 
       - name: Deploy on remote server via SSH
         uses: appleboy/ssh-action@v1.0.0
@@ -61,32 +63,28 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 7771
           script: |
-            set -e  # Exit immediately on error
+            set -e
             echo "=== Starting deployment ==="
             
-            # Create directory if not exists
             mkdir -p /home/${{ secrets.SERVER_USER }}/tcwebapp
             
-            # Verify .env exists
             if [ ! -f /home/${{ secrets.SERVER_USER }}/tcwebapp/.env ]; then
               echo "Error: .env file missing on server"
               exit 1
             fi
             
-            # Pull new image
             docker pull ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
             
-            # Stop and remove old container
             docker rm -f tcwebapp || true
             
-            # Run new container
             docker run -d \
               --name tcwebapp \
-              -p 8181:8181 \
+              -p 80:80 \  # Changed from 8181 to match Dockerfile EXPOSE
               -p 5174:5174 \
-              --env-file /home/${{ secrets.SERVER_USER }}/tcwebapp/.env \
+              -v /home/${{ secrets.SERVER_USER }}/tcwebapp/.env:/app/.env \
               --restart unless-stopped \
               ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA_TAG }}
             
             echo "=== Deployment successful ==="
             docker ps -a | grep tcwebapp
+            docker logs tcwebapp
