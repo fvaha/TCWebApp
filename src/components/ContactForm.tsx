@@ -131,7 +131,7 @@ export default function ContactForm() {
                 theme={isDark ? "dark" : "light"}
                 onChange={setRecaptchaValue}
               />
-            </div>
+            </div>            
             <ValidationError prefix="Email" field="email" errors={state.errors} />
             <ValidationError prefix="Message" field="message" errors={state.errors} />
             {state.errors && (
@@ -151,6 +151,12 @@ export default function ContactForm() {
               >
                 {state.submitting ? "…" : t.contact?.send || "Send"}
               </button>
+              <div style={{ margin: 20, padding: 20, border: "1px solid blue" }}>
+  <ReCAPTCHA
+    sitekey={"6Le-P2MrAAAAALS4taUTV8ZTbC5DqKwAGLsaj9Es"}
+    onChange={setRecaptchaValue}
+  />
+</div>
             </div>
           </form>
 
