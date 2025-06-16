@@ -18,7 +18,8 @@ interface TurnstileResponse {
   cdata?: string
 }
 
-const TURNSTILE_SECRET = '0x4AAAAAABgxYf6x_US8XzyXFtl51EAVUrA'
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
+
 
 const app = new Hono()
 

@@ -16,7 +16,8 @@ export default function ContactForm() {
     return () => obs.disconnect();
   }, []);
 
-  const siteKey = "0x4AAAAAABgxYdNBr1gcmk5n";
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [widgetReady, setWidgetReady] = useState(false);
