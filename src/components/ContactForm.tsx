@@ -16,8 +16,7 @@ export default function ContactForm() {
     return () => obs.disconnect();
   }, []);
 
-  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
-
+  const siteKey = "0x4AAAAAABgxYdNBr1gcmk5n"; // hardcoded safely
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [widgetReady, setWidgetReady] = useState(false);
@@ -27,7 +26,12 @@ export default function ContactForm() {
   const renderTurnstile = () => {
     const turnstile = (window as any).turnstile;
     const container = document.getElementById("turnstile-widget");
-    if (!container || !turnstile) return;
+
+    if (!turnstile || !container || !siteKey) {
+      console.error("Turnstile render failed: missing script, container, or siteKey");
+      return;
+    }
+
     container.innerHTML = "";
     setTurnstileToken(null);
     setWidgetReady(false);
@@ -58,6 +62,7 @@ export default function ContactForm() {
   };
 
   useEffect(() => {
+    if (!siteKey) return;
     renderTurnstile();
     return () => {
       if (widgetTimer.current) clearTimeout(widgetTimer.current);
@@ -71,11 +76,13 @@ export default function ContactForm() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrors(null);
+
     if (!turnstileToken) {
       setExpired(true);
       alert("Please complete the security check first.");
       return;
     }
+
     setSubmitting(true);
     const formData = new FormData(e.currentTarget);
     const data: Record<string, string> = {};
@@ -185,16 +192,14 @@ export default function ContactForm() {
               )}
             </div>
             {errors && (
-              <div className="text-red-600 text-center font-medium">
-                {errors}
-              </div>
+              <div className="text-red-600 text-center font-medium">{errors}</div>
             )}
             <div className="text-center">
               <button
                 type="submit"
                 disabled={submitting || (!widgetReady && !succeeded)}
                 className={`bg-gold text-black font-bold py-3 px-8 rounded-lg transition duration-300 ${
-                  submitting || !widgetReady
+                  submitting || (!widgetReady && !succeeded)
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-yellow-500"
                 }`}
