@@ -20,6 +20,7 @@
     "prepare": "echo 'ready'"
   },
   "dependencies": {
+    "@formspree/react": "^3.0.0",
     "@hono/node-server": "^1.14.4",
     "@react-three/drei": "^10.2.0",
     "@react-three/fiber": "^9.1.2",
