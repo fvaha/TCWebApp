@@ -8,8 +8,8 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build:backend": "rimraf dist-backend && tsc -p tsconfig.node.json",
-    "build": "npm run clean && npm run build:backend && vite build",
+    "build:backend": "tsc -p tsconfig.node.json --outDir backend/dist",
+    "build": "npm run build:backend && vite build",
     "dev": "vite",
     "dev:api": "tsx watch backend/server.ts",
     "dev:all": "concurrently -k -n FRONTEND,BACKEND -c magenta,cyan \"npm run dev\" \"npm run dev:api\"",
