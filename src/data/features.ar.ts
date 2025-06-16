@@ -18,16 +18,15 @@ import { GiAbstract023 as FaCheckShield } from "react-icons/gi";
 
 export const features: Feature[] = [
   {
-    title: "تشفير من الطرف إلى الطرف",
+    title: "بنية جديدة كلياً",
     icon: FaShieldAlt,
-    description:
-      "يتم تشفير جميع البيانات قبل مغادرة جهازك لضمان الخصوصية الكاملة.",
+    description: "تشفير متقدم يتجاوز الحلول القياسية.",
     points: [
-      "AES-256 + ECDSA + secp256k1",
-      "تشفير للرسائل والمدفوعات",
-      "غير متاحة مطلقًا لأطراف ثالثة",
+      "يعتمد على منحنى secp256k1",
+      "نفس الإدخال يعطي دائماً مخرجات مختلفة",
+      "بدون أبواب خلفية حكومية"
     ],
-  },
+  }  ,
   {
     title: "تخزين المفاتيح في العتاد",
     icon: FaFingerprint,

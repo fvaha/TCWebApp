@@ -18,16 +18,15 @@ import { GiAbstract023 as FaCheckShield } from "react-icons/gi";
 
 export const features: Feature[] = [
   {
-    title: "Cifrado de extremo a extremo",
+    title: "Arquitectura completamente nueva",
     icon: FaShieldAlt,
-    description:
-      "Todos los datos se cifran antes de salir de tu dispositivo, garantizando privacidad total.",
+    description: "Cifrado avanzado más allá de las soluciones estándar.",
     points: [
-      "AES-256 + ECDSA + secp256k1",
-      "Cifrado de mensajes y pagos",
-      "Nunca accesible a terceros",
+      "Basado en la curva secp256k1",
+      "La misma entrada siempre produce diferentes salidas",
+      "Sin puertas traseras gubernamentales"
     ],
-  },
+  }  ,
   {
     title: "Almacenamiento de claves en hardware",
     icon: FaFingerprint,
