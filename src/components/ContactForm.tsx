@@ -1,15 +1,22 @@
-import React, { useEffect, useRef, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+import React, { useEffect, useState, useRef } from "react";
 import { useLang } from "../components/LanguageContext";
 
-type ContactTopic = string | { bold: string; text: string };
-const RECAPTCHA_SITE_KEY = "6LeATWMrAAAAAOnaYhd54ByxLKCFv-IRHv1RHVg2";
+const RECAPTCHA_SITE_KEY = "6Ld3UGMrAAAAADp7w6RKxf9s6BP0pvZtURDXqnOl"; // Replace with your real key
 
 export default function ContactForm() {
   const { t } = useLang();
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [state, setState] = useState({ submitting: false, succeeded: false, errors: [] as any[] });
   const [isDark, setIsDark] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Load reCAPTCHA v3 script once
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = `https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`;
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -20,27 +27,25 @@ export default function ContactForm() {
     return () => obs.disconnect();
   }, []);
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setState({ submitting: true, succeeded: false, errors: [] });
+
+    if (!formRef.current) return;
+
+    setState({ ...state, submitting: true });
 
     try {
-      const token = await recaptchaRef.current?.executeAsync();
-      recaptchaRef.current?.reset();
+      // Run reCAPTCHA v3
+      const recaptchaToken = await (window as any).grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: "submit" });
 
-      if (!token) {
-        alert("reCAPTCHA failed");
-        setState({ submitting: false, succeeded: false, errors: [{ message: "reCAPTCHA failed" }] });
-        return;
-      }
-
-      const form = e.currentTarget as HTMLFormElement;
-      const formData = new FormData(form);
-      formData.append("g-recaptcha-response", token);
+      const formData = new FormData(formRef.current);
+      formData.append("g-recaptcha-response", recaptchaToken);
 
       const res = await fetch("https://formspree.io/f/xanjjnya", {
         method: "POST",
-        headers: { Accept: "application/json" },
+        headers: {
+          Accept: "application/json",
+        },
         body: formData,
       });
 
@@ -48,12 +53,14 @@ export default function ContactForm() {
 
       if (json.ok) {
         setState({ submitting: false, succeeded: true, errors: [] });
-        form.reset();
+        formRef.current.reset();
       } else {
         setState({ submitting: false, succeeded: false, errors: json.errors || [] });
+        alert("Submission failed: " + JSON.stringify(json.errors || json));
       }
     } catch (error) {
-      setState({ submitting: false, succeeded: false, errors: [{ message: String(error) }] });
+      setState({ submitting: false, succeeded: false, errors: [error] });
+      alert("Submission error: " + error);
     }
   };
 
@@ -83,6 +90,7 @@ export default function ContactForm() {
         <h2 className="text-4xl font-bold text-gold text-center mb-12">{t.contact?.heading || "Contact"}</h2>
         <div className="flex flex-col md:flex-row gap-10">
           <form
+            ref={formRef}
             onSubmit={onSubmit}
             autoComplete="off"
             className="flex-1 bg-white/90 dark:bg-neutral-950/80 rounded-xl shadow p-8 space-y-6 border border-gold/20 backdrop-blur"
@@ -120,20 +128,9 @@ export default function ContactForm() {
               }`}
             />
 
-            {/* Invisible reCAPTCHA */}
-            <ReCAPTCHA
-              ref={recaptchaRef}
-              sitekey={RECAPTCHA_SITE_KEY}
-              size="invisible"
-              theme={isDark ? "dark" : "light"}
-              badge="inline" // Prevent bottom-right floating badge
-            />
-
             {state.errors.length > 0 && (
               <div className="text-red-600 text-center font-medium">
-                {state.errors.map((err, i) => (
-                  <div key={i}>{err.message}</div>
-                ))}
+                {JSON.stringify(state.errors)}
               </div>
             )}
 
@@ -155,13 +152,7 @@ export default function ContactForm() {
               <h3 className="text-2xl font-bold text-gold mb-3">{t.contact?.infoHeading || "Why contact us?"}</h3>
               <ul className="list-disc ml-6 text-neutral-700 dark:text-neutral-300 space-y-2">
                 {(t.contact?.topics as ContactTopic[]).map((topic, i) =>
-                  typeof topic === "string" ? (
-                    <li key={i}>{topic}</li>
-                  ) : (
-                    <li key={i}>
-                      <b>{topic.bold}</b> {topic.text}
-                    </li>
-                  )
+                  typeof topic === "string" ? <li key={i}>{topic}</li> : <li key={i}><b>{topic.bold}</b> {topic.text}</li>
                 )}
               </ul>
             </div>
