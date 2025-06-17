@@ -4,7 +4,7 @@ import { useLang } from "../components/LanguageContext";
 
 type ContactTopic = string | { bold: string; text: string };
 
-const RECAPTCHA_SITE_KEY = "6Le-P2MrAAAAALS4taUTV8ZTbC5DqKwAGLsaj9Es";
+const RECAPTCHA_SITE_KEY = "6LdvTWMrAAAAAOE0zv5ODiRlsDZ0UdqNQy2Zx6bX";
 
 export default function ContactForm() {
   const { t } = useLang();
