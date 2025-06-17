@@ -1,15 +1,13 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useLang } from "../components/LanguageContext";
 
 type ContactTopic = string | { bold: string; text: string };
-
 const RECAPTCHA_SITE_KEY = "6LeATWMrAAAAAOnaYhd54ByxLKCFv-IRHv1RHVg2";
 
 export default function ContactForm() {
   const { t } = useLang();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-  const [recaptchaValue, setRecaptchaValue] = useState<string | null>(null);
   const [state, setState] = useState({ submitting: false, succeeded: false, errors: [] as any[] });
   const [isDark, setIsDark] = useState(false);
 
@@ -24,26 +22,17 @@ export default function ContactForm() {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!recaptchaRef.current) {
-      alert("reCAPTCHA not loaded");
-      return;
-    }
-
     setState({ submitting: true, succeeded: false, errors: [] });
 
     try {
-      // Execute invisible reCAPTCHA
-      const token = await recaptchaRef.current.executeAsync();
-      recaptchaRef.current.reset();
+      const token = await recaptchaRef.current?.executeAsync();
+      recaptchaRef.current?.reset();
 
       if (!token) {
-        alert("Failed to get reCAPTCHA token");
-        setState({ submitting: false, succeeded: false, errors: ["No token"] });
+        alert("reCAPTCHA failed");
+        setState({ submitting: false, succeeded: false, errors: [{ message: "reCAPTCHA failed" }] });
         return;
       }
-
-      setRecaptchaValue(token);
 
       const form = e.currentTarget as HTMLFormElement;
       const formData = new FormData(form);
@@ -51,9 +40,7 @@ export default function ContactForm() {
 
       const res = await fetch("https://formspree.io/f/xanjjnya", {
         method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
+        headers: { Accept: "application/json" },
         body: formData,
       });
 
@@ -61,15 +48,12 @@ export default function ContactForm() {
 
       if (json.ok) {
         setState({ submitting: false, succeeded: true, errors: [] });
-        setRecaptchaValue(null);
         form.reset();
       } else {
         setState({ submitting: false, succeeded: false, errors: json.errors || [] });
-        alert("Submission failed: " + JSON.stringify(json.errors || json));
       }
     } catch (error) {
-      setState({ submitting: false, succeeded: false, errors: [error] });
-      alert("Submission error: " + error);
+      setState({ submitting: false, succeeded: false, errors: [{ message: String(error) }] });
     }
   };
 
@@ -136,16 +120,21 @@ export default function ContactForm() {
               }`}
             />
 
-            {/* Invisible reCAPTCHA widget */}
+            {/* Invisible reCAPTCHA */}
             <ReCAPTCHA
               ref={recaptchaRef}
               sitekey={RECAPTCHA_SITE_KEY}
               size="invisible"
               theme={isDark ? "dark" : "light"}
+              badge="inline" // Prevent bottom-right floating badge
             />
 
             {state.errors.length > 0 && (
-              <div className="text-red-600 text-center font-medium">{JSON.stringify(state.errors)}</div>
+              <div className="text-red-600 text-center font-medium">
+                {state.errors.map((err, i) => (
+                  <div key={i}>{err.message}</div>
+                ))}
+              </div>
             )}
 
             <div className="text-center">
