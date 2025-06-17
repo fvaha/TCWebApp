@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { ValidationError } from "@formspree/react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useLang } from "../components/LanguageContext";
 
@@ -30,7 +29,7 @@ export default function ContactForm() {
       return;
     }
 
-    setState({ ...state, submitting: true, errors: [] });
+    setState({ submitting: true, succeeded: false, errors: [] });
 
     const formData = new FormData(e.currentTarget);
     formData.append("g-recaptcha-response", recaptchaValue);
@@ -127,9 +126,7 @@ export default function ContactForm() {
             </div>
 
             {state.errors.length > 0 && (
-              <div className="text-red-600 text-center font-medium">
-                {JSON.stringify(state.errors)}
-              </div>
+              <div className="text-red-600 text-center font-medium">{JSON.stringify(state.errors)}</div>
             )}
 
             <div className="text-center">
@@ -150,7 +147,13 @@ export default function ContactForm() {
               <h3 className="text-2xl font-bold text-gold mb-3">{t.contact?.infoHeading || "Why contact us?"}</h3>
               <ul className="list-disc ml-6 text-neutral-700 dark:text-neutral-300 space-y-2">
                 {(t.contact?.topics as ContactTopic[]).map((topic, i) =>
-                  typeof topic === "string" ? <li key={i}>{topic}</li> : <li key={i}><b>{topic.bold}</b> {topic.text}</li>
+                  typeof topic === "string" ? (
+                    <li key={i}>{topic}</li>
+                  ) : (
+                    <li key={i}>
+                      <b>{topic.bold}</b> {topic.text}
+                    </li>
+                  )
                 )}
               </ul>
             </div>
