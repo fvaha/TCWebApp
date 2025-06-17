@@ -25,16 +25,15 @@ export default function ContactForm() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (!recaptchaRef.current) {
+      alert("reCAPTCHA not loaded");
+      return;
+    }
+
     setState({ submitting: true, succeeded: false, errors: [] });
 
     try {
-      if (!recaptchaRef.current) {
-        alert("reCAPTCHA not loaded");
-        setState({ submitting: false, succeeded: false, errors: ["reCAPTCHA not loaded"] });
-        return;
-      }
-
-      // Execute the invisible recaptcha and wait for token
+      // Execute invisible reCAPTCHA
       const token = await recaptchaRef.current.executeAsync();
       recaptchaRef.current.reset();
 
@@ -52,7 +51,9 @@ export default function ContactForm() {
 
       const res = await fetch("https://formspree.io/f/xanjjnya", {
         method: "POST",
-        headers: { Accept: "application/json" },
+        headers: {
+          Accept: "application/json",
+        },
         body: formData,
       });
 
@@ -134,14 +135,14 @@ export default function ContactForm() {
                 isDark ? "bg-neutral-900 text-white placeholder:text-neutral-400" : "bg-white text-black placeholder:text-neutral-500"
               }`}
             />
-            <div className="flex flex-col items-center">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={RECAPTCHA_SITE_KEY}
-                size="invisible"
-                theme={isDark ? "dark" : "light"}
-              />
-            </div>
+
+            {/* Invisible reCAPTCHA widget */}
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={RECAPTCHA_SITE_KEY}
+              size="invisible"
+              theme={isDark ? "dark" : "light"}
+            />
 
             {state.errors.length > 0 && (
               <div className="text-red-600 text-center font-medium">{JSON.stringify(state.errors)}</div>
@@ -178,11 +179,6 @@ export default function ContactForm() {
           </div>
         </div>
       </div>
-
-      {/* CSS to hide invisible reCAPTCHA badge */}
-      <style>{`
-        .grecaptcha-badge { visibility: hidden !important; }
-      `}</style>
     </section>
   );
 }
