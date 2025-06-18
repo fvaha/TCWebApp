@@ -77,7 +77,15 @@ export default function ContactForm() {
         body: formData,
       });
 
-      const result = await res.json();
+      // Make sure the response is actually JSON!
+      let result;
+      try {
+        result = await res.json();
+      } catch {
+        setError("Submission error: server did not return JSON.");
+        setSubmitting(false);
+        return;
+      }
 
       if (result.success) {
         setSucceeded(true);
@@ -107,7 +115,7 @@ export default function ContactForm() {
 
   if (succeeded) {
     return (
-      <section className="py-24 px-6 md:px-16" style={sectionStyle}>
+      <section id="contact" className="py-24 px-6 md:px-16" style={sectionStyle}>
         <div className="max-w-2xl mx-auto text-center text-2xl font-bold text-gold">
           {t.contact?.success || "Thank you for contacting us!"}
         </div>
@@ -116,10 +124,18 @@ export default function ContactForm() {
   }
 
   return (
-    <section className="relative py-24 px-6 md:px-16 transition-colors" style={sectionStyle}>
-      {isDark && <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />}
+    <section
+      id="contact"
+      className="relative py-24 px-6 md:px-16 transition-colors"
+      style={sectionStyle}
+    >
+      {isDark && (
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-md pointer-events-none" />
+      )}
       <div className="relative max-w-6xl mx-auto z-10 animate-fadeInUp">
-        <h2 className="text-4xl font-bold text-gold text-center mb-12">{t.contact?.heading || "Contact"}</h2>
+        <h2 className="text-4xl font-bold text-gold text-center mb-12">
+          {t.contact?.heading || "Contact"}
+        </h2>
         <div className="flex flex-col md:flex-row gap-10">
           <form
             ref={formRef}
@@ -135,7 +151,9 @@ export default function ContactForm() {
                 required
                 placeholder={t.contact?.namePlaceholder || "Name"}
                 className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
-                  isDark ? "bg-neutral-900 text-white placeholder:text-neutral-400" : "bg-white text-black placeholder:text-neutral-500"
+                  isDark
+                    ? "bg-neutral-900 text-white placeholder:text-neutral-400"
+                    : "bg-white text-black placeholder:text-neutral-500"
                 }`}
               />
               <input
@@ -145,7 +163,9 @@ export default function ContactForm() {
                 required
                 placeholder={t.contact?.emailPlaceholder || "Email"}
                 className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
-                  isDark ? "bg-neutral-900 text-white placeholder:text-neutral-400" : "bg-white text-black placeholder:text-neutral-500"
+                  isDark
+                    ? "bg-neutral-900 text-white placeholder:text-neutral-400"
+                    : "bg-white text-black placeholder:text-neutral-500"
                 }`}
               />
             </div>
@@ -156,35 +176,43 @@ export default function ContactForm() {
               rows={6}
               placeholder={t.contact?.messagePlaceholder || "Message"}
               className={`w-full p-4 rounded-lg border border-gold/20 focus:border-gold ${
-                isDark ? "bg-neutral-900 text-white placeholder:text-neutral-400" : "bg-white text-black placeholder:text-neutral-500"
+                isDark
+                  ? "bg-neutral-900 text-white placeholder:text-neutral-400"
+                  : "bg-white text-black placeholder:text-neutral-500"
               }`}
             />
 
-            {/* --- Cloudflare Turnstile --- */}
-            <div ref={turnstileRef} className="my-2" />
+            {/* --- Centered Cloudflare Turnstile --- */}
+            <div className="flex justify-center">
+              <div ref={turnstileRef} className="my-2" />
+            </div>
 
-            {error && <div className="text-red-600 text-center font-medium">{error}</div>}
+            {error && (
+              <div className="text-red-600 text-center font-medium">{error}</div>
+            )}
 
             <div className="text-center">
               <button
                 type="submit"
                 disabled={submitting}
                 className={`bg-gold text-black font-bold py-3 px-8 rounded-lg transition duration-300 ${
-                  submitting ? "opacity-50 cursor-not-allowed" : "hover:bg-yellow-500"
+                  submitting
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-yellow-500"
                 }`}
               >
                 {submitting ? "…" : t.contact?.send || "Send"}
               </button>
             </div>
           </form>
-          {/* Info box omitted for brevity, you can keep your info box here */}
+          {/* You can include your info box here if you want */}
         </div>
       </div>
     </section>
   );
 }
 
-// Add this to global scope for TypeScript
+// For TS global
 declare global {
   interface Window {
     turnstile: any;
