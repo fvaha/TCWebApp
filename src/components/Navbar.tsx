@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { TbSun, TbMoon, TbMenu2 } from "react-icons/tb";
 import { useLang } from "../components/LanguageContext";
+import { useLocation } from "react-router-dom";
 
 type NavbarProps = {
   toggleDark: () => void;
@@ -57,6 +58,12 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDark }) => {
   // Mobile drawer
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Get current location for conditional navigation
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+  const isTokenPage = location.pathname === "/token";
+  const isRoadmapPage = location.pathname === "/roadmap";
+
   return (
     <nav className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gold/50 transition-colors">
       <div className="max-w-7xl mx-auto flex items-center justify-between py-3 px-6">
@@ -68,21 +75,64 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDark }) => {
         {/* ===== Desktop nav ===== */}
         <div className="hidden md:flex items-center space-x-4">
           <div className="flex space-x-6">
-            <a
-              href="#features"
-              className="hover:text-gold font-medium transition"
-            >
-              {t.nav.features}
-            </a>
-            <a href="#faq" className="hover:text-gold font-medium transition">
-              {t.nav.faq}
-            </a>
-            <a
-              href="#contact"
-              className="hover:text-gold font-medium transition"
-            >
-              {t.nav.contact}
-            </a>
+            {isHomePage ? (
+              // Home page - show all navigation items
+              <>
+                <a
+                  href="#features"
+                  className="hover:text-gold font-medium transition"
+                >
+                  {t.nav.features}
+                </a>
+                <a href="#faq" className="hover:text-gold font-medium transition">
+                  {t.nav.faq}
+                </a>
+                <a
+                  href="#contact"
+                  className="hover:text-gold font-medium transition"
+                >
+                  {t.nav.contact}
+                </a>
+                <a
+                  href="/token"
+                  className="hover:text-gold font-medium transition"
+                >
+                  {t.nav.token}
+                </a>
+                <a
+                  href="/roadmap"
+                  className="hover:text-gold font-medium transition"
+                >
+                  {t.nav.roadmap}
+                </a>
+              </>
+            ) : (
+              // Token/Roadmap pages - show only home/token/roadmap
+              <>
+                <a
+                  href="/"
+                  className="hover:text-gold font-medium transition"
+                >
+                  Home
+                </a>
+                <a
+                  href="/token"
+                  className={`font-medium transition ${
+                    isTokenPage ? "text-gold" : "hover:text-gold"
+                  }`}
+                >
+                  {t.nav.token}
+                </a>
+                <a
+                  href="/roadmap"
+                  className={`font-medium transition ${
+                    isRoadmapPage ? "text-gold" : "hover:text-gold"
+                  }`}
+                >
+                  {t.nav.roadmap}
+                </a>
+              </>
+            )}
           </div>
           {/* Dark mode toggle */}
           <button
@@ -182,27 +232,75 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDark }) => {
       {isMobileMenuOpen && (
         <div className="animate-fadeIn border-t border-gold bg-white py-2 px-4 shadow-lg dark:bg-black md:hidden">
           <div className="flex flex-col space-y-3">
-            <a
-              href="#features"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="font-medium hover:text-gold"
-            >
-              {t.nav.features}
-            </a>
-            <a
-              href="#faq"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="font-medium hover:text-gold"
-            >
-              {t.nav.faq}
-            </a>
-            <a
-              href="#contact"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="font-medium hover:text-gold"
-            >
-              {t.nav.contact}
-            </a>
+            {isHomePage ? (
+              // Home page mobile navigation
+              <>
+                <a
+                  href="#features"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-medium hover:text-gold"
+                >
+                  {t.nav.features}
+                </a>
+                <a
+                  href="#faq"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-medium hover:text-gold"
+                >
+                  {t.nav.faq}
+                </a>
+                <a
+                  href="#contact"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-medium hover:text-gold"
+                >
+                  {t.nav.contact}
+                </a>
+                <a
+                  href="/token"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-medium hover:text-gold"
+                >
+                  {t.nav.token}
+                </a>
+                <a
+                  href="/roadmap"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-medium hover:text-gold"
+                >
+                  {t.nav.roadmap}
+                </a>
+              </>
+            ) : (
+              // Token/Roadmap pages mobile navigation
+              <>
+                <a
+                  href="/"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-medium hover:text-gold"
+                >
+                  Home
+                </a>
+                <a
+                  href="/token"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`font-medium transition ${
+                    isTokenPage ? "text-gold" : "hover:text-gold"
+                  }`}
+                >
+                  {t.nav.token}
+                </a>
+                <a
+                  href="/roadmap"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`font-medium transition ${
+                    isRoadmapPage ? "text-gold" : "hover:text-gold"
+                  }`}
+                >
+                  {t.nav.roadmap}
+                </a>
+              </>
+            )}
           </div>
         </div>
       )}

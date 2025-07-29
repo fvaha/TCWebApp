@@ -1,9 +1,10 @@
 import React from "react";
 import { FaTwitter, FaGithub, FaDiscord, FaYoutube } from "react-icons/fa";
 import { useLang } from "../components/LanguageContext";
+import TwitterFeed from "./TwitterFeed";
 
 const socialLinks = [
-  { name: "Twitter", url: "#", icon: <FaTwitter /> },
+  { name: "Twitter", url: "https://x.com/terra_crypt", icon: <FaTwitter /> },
   { name: "GitHub", url: "#", icon: <FaGithub /> },
   { name: "Discord", url: "#", icon: <FaDiscord /> },
   { name: "YouTube", url: "#", icon: <FaYoutube /> },
@@ -54,16 +55,14 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Link columns */}
-        <div className="flex-[3] grid grid-cols-2 gap-8 sm:grid-cols-4">
+        <div className="flex-[2] grid grid-cols-2 gap-8 sm:grid-cols-2">
           <Column title={t.footer.product} links={t.footer.productLinks} />
           <Column title={t.footer.resources} links={t.footer.resourcesLinks} />
-          <Column title={t.footer.developers} links={t.footer.devLinks} />
-          {/* Pass a prop to indicate this is companyLinks */}
-          <Column
-            title={t.footer.company}
-            links={t.footer.companyLinks}
-            tosIndex={TOS_INDEX}
-          />
+        </div>
+
+        {/* Twitter Feed */}
+        <div className="flex-[2]">
+          <TwitterFeed />
         </div>
       </div>
 
